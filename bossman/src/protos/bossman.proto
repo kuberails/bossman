@@ -2,12 +2,12 @@ syntax = "proto3";
 
 package bossman;
 message Options {
-  oneof timeout { int64 _timeout = 1; }; // default 500 (in ms)
-  oneof docker_image { string _docker_image = 2; };
-  oneof image_pull_secrets { string _image_pull_secrets = 3; };
-  oneof namespace { string _namespace = 5; }
-  oneof backoff_limit { int32 _backoff_limit = 6; }
-  oneof completions { int32 _completions = 7; }
+  oneof timeout { int64 _timeout = 1; };                        // default=500
+  oneof docker_image { string _docker_image = 2; };             // required
+  oneof image_pull_secrets { string _image_pull_secrets = 3; }; // optional
+  oneof namespace { string _namespace = 5; }        // default=default
+  oneof backoff_limit { int32 _backoff_limit = 6; } // optional
+  oneof completions { int32 _completions = 7; }     // optional
   map<string, string> annotations = 4;
 }
 
