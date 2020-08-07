@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package bossman;
+message Options {
+  oneof timeout { int64 _timeout = 1; }; // default 500 (in ms)
+  oneof docker_image { string _docker_image = 2; };
+  oneof image_pull_secrets { string _image_pull_secrets = 3; };
+  oneof namespace { string _namespace = 5; }
+  oneof backoff_limit { int32 _backoff_limit = 6; }
+  oneof completions { int32 _completions = 7; }
+  map<string, string> annotations = 4;
+}
+
+message Job {
+  string name = 1;
+  string id = 2;
+  Options options = 3;
+  Status status = 4;
+}
+
+enum Status {
+  WAITING = 0;
+  PROCESSING = 1;
+  COMPLETE = 2;
+  ERROR = 3;
+}
+
+// perform()
+message PerformRequest {
+  oneof name { string _name = 1; }; // required
+  Options options = 2;              // required
+}
+
+message PerformResponse {
+  string id = 1;
+  Status status = 2;
+}
+// perform()
+
+// get_status()
+message GetStatusRequest { string name = 1; }
+
+// get_status()
+
+// get()
+message GetRequest { string id = 1; }
+message GetResponse { Job job = 1; }
+// get()
+
+message GetStatusResponse { string job_id = 1; }
+
+// get_list()
+message GetListRequest { string name = 1; }
+message GetListResponse { repeated Job jobs = 1; }
+//
+
+service JobService {
+  rpc Get(GetRequest) returns (GetResponse) {}
+  rpc GetStatus(GetStatusRequest) returns (GetStatusResponse) {}
+  rpc GetList(GetListRequest) returns (GetListResponse) {}
+
+  rpc Perform(PerformRequest) returns (PerformResponse) {}
+}
