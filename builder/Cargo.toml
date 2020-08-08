@@ -1,0 +1,9 @@
+[package]
+name = "builder"
+version = "0.1.0"
+authors = ["Praveen Perera <ppraveen25@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+prost = "0.6"
+prost-build = "0.6" 
