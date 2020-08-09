@@ -10,20 +10,22 @@ defmodule BossmanWorker do
     Bossman.Protobuf.V1alpha1.Options.new(
       backoff_limit: {:_backoff_limit, 2},
       env: [
-        %Bossman.Protobuf.V1alpha1.Options.Env{
-          _env:
-            {:_value,
-             Bossman.Protobuf.V1alpha1.Options.EnvValue.new(%{name: "hello", value: "world"})}
+        %{
+          env: {:value, %{name: "hello", value: "world"}}
         },
-        %Bossman.Protobuf.V1alpha1.Options.Env{
-          _env:
-            {:_valueFrom,
-             Bossman.Protobuf.V1alpha1.Options.EnvFrom.new(%{
+        %{
+          env: {:value, %{name: "hello", value: "world"}}
+        },
+        %{
+          env: {:value, %{name: "hello", value: "world"}}
+        },
+        %{
+          env:
+            {:valueFrom,
+             %{
                name: "praveen",
-               valueFrom:
-                 {:secretKeyRef,
-                  Bossman.Protobuf.V1alpha1.Options.SecretKeyRef.new(%{name: "1", key: "@"})}
-             })}
+               valueFrom: {:secretKeyRef, %{name: "1", key: "@"}}
+             }}
         }
       ]
     )

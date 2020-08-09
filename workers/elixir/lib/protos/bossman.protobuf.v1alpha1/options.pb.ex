@@ -17,13 +17,13 @@ defmodule Bossman.Protobuf.V1alpha1.Options.Env do
   use Protobuf, syntax: :proto3
 
   @type t :: %__MODULE__{
-          _env: {atom, any}
+          env: {atom, any}
         }
-  defstruct [:_env]
+  defstruct [:env]
 
-  oneof :_env, 0
-  field :_value, 2, type: Bossman.Protobuf.V1alpha1.Options.EnvValue, oneof: 0
-  field :_valueFrom, 3, type: Bossman.Protobuf.V1alpha1.Options.EnvFrom, oneof: 0
+  oneof :env, 0
+  field :value, 2, type: Bossman.Protobuf.V1alpha1.Options.EnvValue, oneof: 0
+  field :valueFrom, 3, type: Bossman.Protobuf.V1alpha1.Options.EnvFrom, oneof: 0
 end
 
 defmodule Bossman.Protobuf.V1alpha1.Options.EnvFrom do

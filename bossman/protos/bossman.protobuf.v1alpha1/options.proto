@@ -17,9 +17,9 @@ message Options {
   repeated EnvFrom envFrom = 12;
 
   message Env {
-    oneof _env {
-      EnvValue _value = 2;
-      EnvFrom _valueFrom = 3;
+    oneof env {
+      EnvValue value = 2;
+      EnvFrom valueFrom = 3;
     }
   }
 
