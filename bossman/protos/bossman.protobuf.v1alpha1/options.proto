@@ -15,34 +15,34 @@ message Options {
   repeated string command = 10;                     // optional
   repeated Env env = 11;
   repeated EnvFrom envFrom = 12;
-}
 
-message Env {
-  oneof _env {
-    EnvValue _value = 2;
-    EnvFrom _valueFrom = 3;
+  message Env {
+    oneof _env {
+      EnvValue _value = 2;
+      EnvFrom _valueFrom = 3;
+    }
   }
-}
 
-message EnvFrom {
-  string name = 1;
-  oneof valueFrom {
-    SecretKeyRef secretKeyRef = 2;
-    ConfigMapKeyRef configMapKeyRef = 3;
+  message EnvFrom {
+    string name = 1;
+    oneof valueFrom {
+      SecretKeyRef secretKeyRef = 2;
+      ConfigMapKeyRef configMapKeyRef = 3;
+    }
   }
-}
 
-message EnvValue {
-  string name = 1;
-  string value = 2;
-}
+  message EnvValue {
+    string name = 1;
+    string value = 2;
+  }
 
-message ConfigMapKeyRef {
-  string key = 1;
-  string name = 2;
-}
+  message ConfigMapKeyRef {
+    string key = 1;
+    string name = 2;
+  }
 
-message SecretKeyRef {
-  string key = 1;
-  string name = 2;
+  message SecretKeyRef {
+    string key = 1;
+    string name = 2;
+  }
 }
