@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package bossman.protobuf.v1alpha1;
+
+message Options {
+  oneof timeout { int64 _timeout = 1; };                        // default=500
+  oneof docker_image { string _docker_image = 2; };             // required
+  oneof image_pull_secrets { string _image_pull_secrets = 3; }; // optional
+  map<string, string> annotations = 4;
+  oneof namespace { string _namespace = 5; }        // default=default
+  oneof backoff_limit { int32 _backoff_limit = 6; } // optional
+  oneof completions { int32 _completions = 7; }     // optional
+  oneof parallelism { int32 _parallelism = 8; }     // optional
+  repeated string args = 9;                         // optional
+  repeated string command = 10;                     // optional
+  repeated Env env = 11;
+  repeated EnvFrom envFrom = 12;
+}
+
+message Env {
+  oneof _env {
+    EnvValue _value = 2;
+    EnvFrom _valueFrom = 3;
+  }
+}
+
+message EnvFrom {
+  string name = 1;
+  oneof valueFrom {
+    SecretKeyRef secretKeyRef = 2;
+    ConfigMapKeyRef configMapKeyRef = 3;
+  }
+}
+
+message EnvValue {
+  string name = 1;
+  string value = 2;
+}
+
+message ConfigMapKeyRef {
+  string key = 1;
+  string name = 2;
+}
+
+message SecretKeyRef {
+  string key = 1;
+  string name = 2;
+}
