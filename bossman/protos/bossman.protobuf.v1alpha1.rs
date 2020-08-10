@@ -94,66 +94,68 @@ pub struct Job {
     pub id: std::string::String,
     #[prost(message, optional, tag="3")]
     pub options: ::std::option::Option<Options>,
-    #[prost(enumeration="Status", tag="4")]
+    #[prost(enumeration="job::Status", tag="4")]
     pub status: i32,
 }
-/// perform()
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct PerformRequest {
-    /// required
-    #[prost(message, optional, tag="1")]
-    pub name: ::std::option::Option<::std::string::String>,
-    /// required
-    #[prost(message, optional, tag="2")]
-    pub options: ::std::option::Option<Options>,
-}
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct PerformResponse {
-    #[prost(string, tag="1")]
-    pub id: std::string::String,
-    #[prost(enumeration="Status", tag="2")]
-    pub status: i32,
-}
-/// get_status()
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct GetStatusRequest {
-    #[prost(string, tag="1")]
-    pub name: std::string::String,
-}
-// get_status()
+pub mod job {
+    /// perform()
+    #[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct PerformRequest {
+        /// required
+        #[prost(message, optional, tag="1")]
+        pub name: ::std::option::Option<::std::string::String>,
+        /// required
+        #[prost(message, optional, tag="2")]
+        pub options: ::std::option::Option<super::Options>,
+    }
+    #[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct PerformResponse {
+        #[prost(string, tag="1")]
+        pub id: std::string::String,
+        #[prost(enumeration="Status", tag="2")]
+        pub status: i32,
+    }
+    /// get_status()
+    #[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct GetStatusRequest {
+        #[prost(string, tag="1")]
+        pub name: std::string::String,
+    }
+    // get_status()
 
-/// get()
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct GetRequest {
-    #[prost(string, tag="1")]
-    pub id: std::string::String,
-}
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct GetResponse {
-    #[prost(message, optional, tag="1")]
-    pub job: ::std::option::Option<Job>,
-}
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct GetStatusResponse {
-    #[prost(string, tag="1")]
-    pub job_id: std::string::String,
-}
-/// get_list()
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct GetListRequest {
-    #[prost(string, tag="1")]
-    pub name: std::string::String,
-}
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct GetListResponse {
-    #[prost(message, repeated, tag="1")]
-    pub jobs: ::std::vec::Vec<Job>,
-}
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
-#[repr(i32)]
-pub enum Status {
-    Waiting = 0,
-    Processing = 1,
-    Complete = 2,
-    Error = 3,
+    /// get()
+    #[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct GetRequest {
+        #[prost(string, tag="1")]
+        pub id: std::string::String,
+    }
+    #[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct GetResponse {
+        #[prost(message, optional, tag="1")]
+        pub job: ::std::option::Option<super::Job>,
+    }
+    #[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct GetStatusResponse {
+        #[prost(string, tag="1")]
+        pub job_id: std::string::String,
+    }
+    /// get_list()
+    #[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct GetListRequest {
+        #[prost(string, tag="1")]
+        pub name: std::string::String,
+    }
+    #[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct GetListResponse {
+        #[prost(message, repeated, tag="1")]
+        pub jobs: ::std::vec::Vec<super::Job>,
+    }
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+    #[repr(i32)]
+    pub enum Status {
+        Waiting = 0,
+        Processing = 1,
+        Complete = 2,
+        Error = 3,
+    }
 }

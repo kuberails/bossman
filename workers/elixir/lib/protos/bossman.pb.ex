@@ -1,4 +1,4 @@
-defmodule Bossman.Protobuf.V1alpha1.Status do
+defmodule Bossman.Protobuf.V1alpha1.Job.Status do
   @moduledoc false
   use Protobuf, enum: true, syntax: :proto3
 
@@ -10,25 +10,7 @@ defmodule Bossman.Protobuf.V1alpha1.Status do
   field :ERROR, 3
 end
 
-defmodule Bossman.Protobuf.V1alpha1.Job do
-  @moduledoc false
-  use Protobuf, syntax: :proto3
-
-  @type t :: %__MODULE__{
-          name: String.t(),
-          id: String.t(),
-          options: Bossman.Protobuf.V1alpha1.Options.t() | nil,
-          status: Bossman.Protobuf.V1alpha1.Status.t()
-        }
-  defstruct [:name, :id, :options, :status]
-
-  field :name, 1, type: :string
-  field :id, 2, type: :string
-  field :options, 3, type: Bossman.Protobuf.V1alpha1.Options
-  field :status, 4, type: Bossman.Protobuf.V1alpha1.Status, enum: true
-end
-
-defmodule Bossman.Protobuf.V1alpha1.PerformRequest do
+defmodule Bossman.Protobuf.V1alpha1.Job.PerformRequest do
   @moduledoc false
   use Protobuf, syntax: :proto3
 
@@ -42,21 +24,21 @@ defmodule Bossman.Protobuf.V1alpha1.PerformRequest do
   field :options, 2, type: Bossman.Protobuf.V1alpha1.Options
 end
 
-defmodule Bossman.Protobuf.V1alpha1.PerformResponse do
+defmodule Bossman.Protobuf.V1alpha1.Job.PerformResponse do
   @moduledoc false
   use Protobuf, syntax: :proto3
 
   @type t :: %__MODULE__{
           id: String.t(),
-          status: Bossman.Protobuf.V1alpha1.Status.t()
+          status: Bossman.Protobuf.V1alpha1.Job.Status.t()
         }
   defstruct [:id, :status]
 
   field :id, 1, type: :string
-  field :status, 2, type: Bossman.Protobuf.V1alpha1.Status, enum: true
+  field :status, 2, type: Bossman.Protobuf.V1alpha1.Job.Status, enum: true
 end
 
-defmodule Bossman.Protobuf.V1alpha1.GetStatusRequest do
+defmodule Bossman.Protobuf.V1alpha1.Job.GetStatusRequest do
   @moduledoc false
   use Protobuf, syntax: :proto3
 
@@ -68,7 +50,7 @@ defmodule Bossman.Protobuf.V1alpha1.GetStatusRequest do
   field :name, 1, type: :string
 end
 
-defmodule Bossman.Protobuf.V1alpha1.GetRequest do
+defmodule Bossman.Protobuf.V1alpha1.Job.GetRequest do
   @moduledoc false
   use Protobuf, syntax: :proto3
 
@@ -80,7 +62,7 @@ defmodule Bossman.Protobuf.V1alpha1.GetRequest do
   field :id, 1, type: :string
 end
 
-defmodule Bossman.Protobuf.V1alpha1.GetResponse do
+defmodule Bossman.Protobuf.V1alpha1.Job.GetResponse do
   @moduledoc false
   use Protobuf, syntax: :proto3
 
@@ -92,7 +74,7 @@ defmodule Bossman.Protobuf.V1alpha1.GetResponse do
   field :job, 1, type: Bossman.Protobuf.V1alpha1.Job
 end
 
-defmodule Bossman.Protobuf.V1alpha1.GetStatusResponse do
+defmodule Bossman.Protobuf.V1alpha1.Job.GetStatusResponse do
   @moduledoc false
   use Protobuf, syntax: :proto3
 
@@ -104,7 +86,7 @@ defmodule Bossman.Protobuf.V1alpha1.GetStatusResponse do
   field :job_id, 1, type: :string
 end
 
-defmodule Bossman.Protobuf.V1alpha1.GetListRequest do
+defmodule Bossman.Protobuf.V1alpha1.Job.GetListRequest do
   @moduledoc false
   use Protobuf, syntax: :proto3
 
@@ -116,7 +98,7 @@ defmodule Bossman.Protobuf.V1alpha1.GetListRequest do
   field :name, 1, type: :string
 end
 
-defmodule Bossman.Protobuf.V1alpha1.GetListResponse do
+defmodule Bossman.Protobuf.V1alpha1.Job.GetListResponse do
   @moduledoc false
   use Protobuf, syntax: :proto3
 
@@ -128,23 +110,29 @@ defmodule Bossman.Protobuf.V1alpha1.GetListResponse do
   field :jobs, 1, repeated: true, type: Bossman.Protobuf.V1alpha1.Job
 end
 
+defmodule Bossman.Protobuf.V1alpha1.Job do
+  @moduledoc false
+  use Protobuf, syntax: :proto3
+
+  @type t :: %__MODULE__{
+          name: String.t(),
+          id: String.t(),
+          options: Bossman.Protobuf.V1alpha1.Options.t() | nil,
+          status: Bossman.Protobuf.V1alpha1.Job.Status.t()
+        }
+  defstruct [:name, :id, :options, :status]
+
+  field :name, 1, type: :string
+  field :id, 2, type: :string
+  field :options, 3, type: Bossman.Protobuf.V1alpha1.Options
+  field :status, 4, type: Bossman.Protobuf.V1alpha1.Job.Status, enum: true
+end
+
 defmodule Bossman.Protobuf.V1alpha1.JobService.Service do
   @moduledoc false
   use GRPC.Service, name: "bossman.protobuf.v1alpha1.JobService"
 
-  rpc :Get, Bossman.Protobuf.V1alpha1.GetRequest, Bossman.Protobuf.V1alpha1.GetResponse
-
-  rpc :GetStatus,
-      Bossman.Protobuf.V1alpha1.GetStatusRequest,
-      Bossman.Protobuf.V1alpha1.GetStatusResponse
-
-  rpc :GetList,
-      Bossman.Protobuf.V1alpha1.GetListRequest,
-      Bossman.Protobuf.V1alpha1.GetListResponse
-
-  rpc :Perform,
-      Bossman.Protobuf.V1alpha1.PerformRequest,
-      Bossman.Protobuf.V1alpha1.PerformResponse
+  rpc :Get, Bossman.Protobuf.V1alpha1.Job.GetRequest, Bossman.Protobuf.V1alpha1.Job.GetResponse
 end
 
 defmodule Bossman.Protobuf.V1alpha1.JobService.Stub do
