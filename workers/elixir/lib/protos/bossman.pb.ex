@@ -16,12 +16,14 @@ defmodule Bossman.Protobuf.V1alpha1.Job.PerformRequest do
 
   @type t :: %__MODULE__{
           name: Google.Protobuf.StringValue.t() | nil,
+          docker_image_name: Google.Protobuf.StringValue.t() | nil,
           options: Bossman.Protobuf.V1alpha1.Options.t() | nil
         }
-  defstruct [:name, :options]
+  defstruct [:name, :docker_image_name, :options]
 
   field :name, 1, type: Google.Protobuf.StringValue
-  field :options, 2, type: Bossman.Protobuf.V1alpha1.Options
+  field :docker_image_name, 2, type: Google.Protobuf.StringValue
+  field :options, 3, type: Bossman.Protobuf.V1alpha1.Options
 end
 
 defmodule Bossman.Protobuf.V1alpha1.Job.PerformResponse do
@@ -115,22 +117,28 @@ defmodule Bossman.Protobuf.V1alpha1.Job do
   use Protobuf, syntax: :proto3
 
   @type t :: %__MODULE__{
-          name: String.t(),
           id: String.t(),
+          name: String.t(),
+          docker_image_name: String.t(),
           options: Bossman.Protobuf.V1alpha1.Options.t() | nil,
           status: Bossman.Protobuf.V1alpha1.Job.Status.t()
         }
-  defstruct [:name, :id, :options, :status]
+  defstruct [:id, :name, :docker_image_name, :options, :status]
 
-  field :name, 1, type: :string
-  field :id, 2, type: :string
-  field :options, 3, type: Bossman.Protobuf.V1alpha1.Options
-  field :status, 4, type: Bossman.Protobuf.V1alpha1.Job.Status, enum: true
+  field :id, 1, type: :string
+  field :name, 2, type: :string
+  field :docker_image_name, 3, type: :string
+  field :options, 4, type: Bossman.Protobuf.V1alpha1.Options
+  field :status, 5, type: Bossman.Protobuf.V1alpha1.Job.Status, enum: true
 end
 
 defmodule Bossman.Protobuf.V1alpha1.JobService.Service do
   @moduledoc false
   use GRPC.Service, name: "bossman.protobuf.v1alpha1.JobService"
+
+  rpc :Perform,
+      Bossman.Protobuf.V1alpha1.Job.PerformRequest,
+      Bossman.Protobuf.V1alpha1.Job.PerformResponse
 
   rpc :Get, Bossman.Protobuf.V1alpha1.Job.GetRequest, Bossman.Protobuf.V1alpha1.Job.GetResponse
 end

@@ -6,10 +6,13 @@ import "bossman.protobuf.v1alpha1/options.proto";
 import "google/protobuf/wrappers.proto";
 
 message Job {
-  string name = 1;
-  string id = 2;
-  Options options = 3;
-  Status status = 4;
+  string id = 1;
+
+  string name = 2;
+  string docker_image_name = 3;
+
+  Options options = 4;
+  Status status = 5;
 
   enum Status {
     WAITING = 0;
@@ -20,8 +23,9 @@ message Job {
 
   // perform()
   message PerformRequest {
-    google.protobuf.StringValue name = 1; // required
-    Options options = 2;                  // required
+    google.protobuf.StringValue name = 1;              // required
+    google.protobuf.StringValue docker_image_name = 2; // required
+    Options options = 3;                               // required
   }
 
   message PerformResponse {
@@ -49,9 +53,9 @@ message Job {
 }
 
 service JobService {
+  rpc Perform(Job.PerformRequest) returns (Job.PerformResponse) {}
   rpc Get(Job.GetRequest) returns (Job.GetResponse) {}
+
   // rpc GetStatus(Job.GetStatusRequest) returns (Job.GetStatusResponse) {}
   // rpc GetList(Job.GetListRequest) returns (Job.GetListResponse) {}
-
-  // rpc Perform(Job.PerformRequest) returns (Job.PerformResponse) {}
 }
