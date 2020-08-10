@@ -1,7 +1,27 @@
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Options {
+    #[prost(message, optional, tag="1")]
+    pub timeout: ::std::option::Option<i32>,
+    /// required
+    #[prost(message, optional, tag="2")]
+    pub docker_image: ::std::option::Option<::std::string::String>,
+    /// optional
+    #[prost(message, optional, tag="3")]
+    pub image_pull_secrets: ::std::option::Option<::std::string::String>,
     #[prost(map="string, string", tag="4")]
     pub annotations: ::std::collections::HashMap<std::string::String, std::string::String>,
+    /// default=default
+    #[prost(message, optional, tag="5")]
+    pub namespace: ::std::option::Option<::std::string::String>,
+    /// optional
+    #[prost(message, optional, tag="6")]
+    pub backoff_limit: ::std::option::Option<i32>,
+    /// optional
+    #[prost(message, optional, tag="7")]
+    pub completions: ::std::option::Option<i32>,
+    /// optional
+    #[prost(message, optional, tag="8")]
+    pub parallelism: ::std::option::Option<i32>,
     /// optional
     #[prost(string, repeated, tag="9")]
     pub args: ::std::vec::Vec<std::string::String>,
@@ -12,20 +32,6 @@ pub struct Options {
     pub env: ::std::vec::Vec<options::Env>,
     #[prost(message, repeated, tag="12")]
     pub env_from: ::std::vec::Vec<options::EnvFrom>,
-    #[prost(oneof="options::Timeout", tags="1")]
-    pub timeout: ::std::option::Option<options::Timeout>,
-    #[prost(oneof="options::DockerImage", tags="2")]
-    pub docker_image: ::std::option::Option<options::DockerImage>,
-    #[prost(oneof="options::ImagePullSecrets", tags="3")]
-    pub image_pull_secrets: ::std::option::Option<options::ImagePullSecrets>,
-    #[prost(oneof="options::Namespace", tags="5")]
-    pub namespace: ::std::option::Option<options::Namespace>,
-    #[prost(oneof="options::BackoffLimit", tags="6")]
-    pub backoff_limit: ::std::option::Option<options::BackoffLimit>,
-    #[prost(oneof="options::Completions", tags="7")]
-    pub completions: ::std::option::Option<options::Completions>,
-    #[prost(oneof="options::Parallelism", tags="8")]
-    pub parallelism: ::std::option::Option<options::Parallelism>,
 }
 pub mod options {
     #[derive(Clone, PartialEq, ::prost::Message)]
@@ -79,41 +85,6 @@ pub mod options {
         #[prost(string, tag="2")]
         pub name: std::string::String,
     }
-    #[derive(Clone, PartialEq, ::prost::Oneof)]
-    pub enum Timeout {
-        #[prost(int64, tag="1")]
-        Timeout(i64),
-    }
-    #[derive(Clone, PartialEq, ::prost::Oneof)]
-    pub enum DockerImage {
-        #[prost(string, tag="2")]
-        DockerImage(std::string::String),
-    }
-    #[derive(Clone, PartialEq, ::prost::Oneof)]
-    pub enum ImagePullSecrets {
-        #[prost(string, tag="3")]
-        ImagePullSecrets(std::string::String),
-    }
-    #[derive(Clone, PartialEq, ::prost::Oneof)]
-    pub enum Namespace {
-        #[prost(string, tag="5")]
-        Namespace(std::string::String),
-    }
-    #[derive(Clone, PartialEq, ::prost::Oneof)]
-    pub enum BackoffLimit {
-        #[prost(int32, tag="6")]
-        BackoffLimit(i32),
-    }
-    #[derive(Clone, PartialEq, ::prost::Oneof)]
-    pub enum Completions {
-        #[prost(int32, tag="7")]
-        Completions(i32),
-    }
-    #[derive(Clone, PartialEq, ::prost::Oneof)]
-    pub enum Parallelism {
-        #[prost(int32, tag="8")]
-        Parallelism(i32),
-    }
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Job {
@@ -130,17 +101,11 @@ pub struct Job {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct PerformRequest {
     /// required
+    #[prost(message, optional, tag="1")]
+    pub name: ::std::option::Option<::std::string::String>,
+    /// required
     #[prost(message, optional, tag="2")]
     pub options: ::std::option::Option<Options>,
-    #[prost(oneof="perform_request::Name", tags="1")]
-    pub name: ::std::option::Option<perform_request::Name>,
-}
-pub mod perform_request {
-    #[derive(Clone, PartialEq, ::prost::Oneof)]
-    pub enum Name {
-        #[prost(string, tag="1")]
-        Name(std::string::String),
-    }
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct PerformResponse {

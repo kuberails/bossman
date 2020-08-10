@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package bossman.protobuf.v1alpha1;
 import "bossman.protobuf.v1alpha1/options.proto";
+import "google/protobuf/wrappers.proto";
 
 message Job {
   string name = 1;
@@ -19,8 +20,8 @@ enum Status {
 
 // perform()
 message PerformRequest {
-  oneof name { string _name = 1; }; // required
-  Options options = 2;              // required
+  google.protobuf.StringValue name = 1; // required
+  Options options = 2;                  // required
 }
 
 message PerformResponse {

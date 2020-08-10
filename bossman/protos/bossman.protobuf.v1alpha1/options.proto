@@ -1,18 +1,19 @@
 syntax = "proto3";
 
 package bossman.protobuf.v1alpha1;
+import "google/protobuf/wrappers.proto";
 
 message Options {
-  oneof timeout { int64 _timeout = 1; };                        // default=500
-  oneof docker_image { string _docker_image = 2; };             // required
-  oneof image_pull_secrets { string _image_pull_secrets = 3; }; // optional
+  google.protobuf.Int32Value timeout = 1;
+  google.protobuf.StringValue docker_image = 2;       // required
+  google.protobuf.StringValue image_pull_secrets = 3; // optional
   map<string, string> annotations = 4;
-  oneof namespace { string _namespace = 5; }        // default=default
-  oneof backoff_limit { int32 _backoff_limit = 6; } // optional
-  oneof completions { int32 _completions = 7; }     // optional
-  oneof parallelism { int32 _parallelism = 8; }     // optional
-  repeated string args = 9;                         // optional
-  repeated string command = 10;                     // optional
+  google.protobuf.StringValue namespace = 5;    // default=default
+  google.protobuf.Int32Value backoff_limit = 6; // optional
+  google.protobuf.Int32Value completions = 7;   // optional
+  google.protobuf.Int32Value parallelism = 8;   // optional
+  repeated string args = 9;                     // optional
+  repeated string command = 10;                 // optional
   repeated Env env = 11;
   repeated EnvFrom envFrom = 12;
 

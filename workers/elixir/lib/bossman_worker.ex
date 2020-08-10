@@ -8,7 +8,8 @@ defmodule BossmanWorker do
   """
   def run do
     Bossman.Protobuf.V1alpha1.Options.new(
-      backoff_limit: {:_backoff_limit, 2},
+      timeout: %{value: 1},
+      backoff_limit: %{value: 2},
       env: [
         %{
           env: {:value, %{name: "hello", value: "world"}}
@@ -25,6 +26,14 @@ defmodule BossmanWorker do
              %{
                name: "praveen",
                valueFrom: {:secretKeyRef, %{name: "1", key: "@"}}
+             }}
+        },
+        %{
+          env:
+            {:valueFrom,
+             %{
+               name: "praveen",
+               valueFrom: {:configMapKeyRef, %{name: "1", key: "@"}}
              }}
         }
       ]

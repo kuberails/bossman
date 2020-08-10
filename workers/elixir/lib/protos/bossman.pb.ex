@@ -33,13 +33,12 @@ defmodule Bossman.Protobuf.V1alpha1.PerformRequest do
   use Protobuf, syntax: :proto3
 
   @type t :: %__MODULE__{
-          name: {atom, any},
+          name: Google.Protobuf.StringValue.t() | nil,
           options: Bossman.Protobuf.V1alpha1.Options.t() | nil
         }
   defstruct [:name, :options]
 
-  oneof :name, 0
-  field :_name, 1, type: :string, oneof: 0
+  field :name, 1, type: Google.Protobuf.StringValue
   field :options, 2, type: Bossman.Protobuf.V1alpha1.Options
 end
 

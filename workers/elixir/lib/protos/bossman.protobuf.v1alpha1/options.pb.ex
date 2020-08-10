@@ -89,14 +89,14 @@ defmodule Bossman.Protobuf.V1alpha1.Options do
   use Protobuf, syntax: :proto3
 
   @type t :: %__MODULE__{
-          timeout: {atom, any},
-          docker_image: {atom, any},
-          image_pull_secrets: {atom, any},
-          namespace: {atom, any},
-          backoff_limit: {atom, any},
-          completions: {atom, any},
-          parallelism: {atom, any},
+          timeout: Google.Protobuf.Int32Value.t() | nil,
+          docker_image: Google.Protobuf.StringValue.t() | nil,
+          image_pull_secrets: Google.Protobuf.StringValue.t() | nil,
           annotations: %{String.t() => String.t()},
+          namespace: Google.Protobuf.StringValue.t() | nil,
+          backoff_limit: Google.Protobuf.Int32Value.t() | nil,
+          completions: Google.Protobuf.Int32Value.t() | nil,
+          parallelism: Google.Protobuf.Int32Value.t() | nil,
           args: [String.t()],
           command: [String.t()],
           env: [Bossman.Protobuf.V1alpha1.Options.Env.t()],
@@ -106,37 +106,30 @@ defmodule Bossman.Protobuf.V1alpha1.Options do
     :timeout,
     :docker_image,
     :image_pull_secrets,
+    :annotations,
     :namespace,
     :backoff_limit,
     :completions,
     :parallelism,
-    :annotations,
     :args,
     :command,
     :env,
     :envFrom
   ]
 
-  oneof :timeout, 0
-  oneof :docker_image, 1
-  oneof :image_pull_secrets, 2
-  oneof :namespace, 3
-  oneof :backoff_limit, 4
-  oneof :completions, 5
-  oneof :parallelism, 6
-  field :_timeout, 1, type: :int64, oneof: 0
-  field :_docker_image, 2, type: :string, oneof: 1
-  field :_image_pull_secrets, 3, type: :string, oneof: 2
+  field :timeout, 1, type: Google.Protobuf.Int32Value
+  field :docker_image, 2, type: Google.Protobuf.StringValue
+  field :image_pull_secrets, 3, type: Google.Protobuf.StringValue
 
   field :annotations, 4,
     repeated: true,
     type: Bossman.Protobuf.V1alpha1.Options.AnnotationsEntry,
     map: true
 
-  field :_namespace, 5, type: :string, oneof: 3
-  field :_backoff_limit, 6, type: :int32, oneof: 4
-  field :_completions, 7, type: :int32, oneof: 5
-  field :_parallelism, 8, type: :int32, oneof: 6
+  field :namespace, 5, type: Google.Protobuf.StringValue
+  field :backoff_limit, 6, type: Google.Protobuf.Int32Value
+  field :completions, 7, type: Google.Protobuf.Int32Value
+  field :parallelism, 8, type: Google.Protobuf.Int32Value
   field :args, 9, repeated: true, type: :string
   field :command, 10, repeated: true, type: :string
   field :env, 11, repeated: true, type: Bossman.Protobuf.V1alpha1.Options.Env
