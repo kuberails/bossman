@@ -1,4 +1,4 @@
-use bossman::job::{GetRequest, GetResponse, PerformRequest, PerformResponse};
+use bossman::job::{self, GetRequest, GetResponse, PerformRequest, PerformResponse};
 use bossman::job_service_server::{JobService, JobServiceServer};
 use bossman::Job;
 use uuid::Uuid;
@@ -19,7 +19,7 @@ impl JobService for JobServer {
     async fn perform(&self, request: Request<PerformRequest>) -> TonicResponse<PerformResponse> {
         let reply = PerformResponse {
             id: Uuid::new_v4().to_string(),
-            status: bossman::job::Status::Waiting.into(),
+            status: job::Status::Waiting.into(),
         };
 
         Ok(Response::new(reply))

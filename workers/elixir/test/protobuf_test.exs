@@ -6,7 +6,8 @@ defmodule ProtobufTest do
     struct =
       Options.new(
         timeout: %{value: 1},
-        backoff_limit: %{value: 2},
+        retries: %{value: 2},
+        env_from: [%{env_from: {:secret_key_ref, %{name: "1"}}}],
         env: [
           %{
             env: {:value, %{name: "hello", value: "world"}}
@@ -19,18 +20,18 @@ defmodule ProtobufTest do
           },
           %{
             env:
-              {:valueFrom,
+              {:value_from,
                %{
                  name: "praveen",
-                 valueFrom: {:secretKeyRef, %{name: "1", key: "@"}}
+                 value_from: {:secret_key_ref, %{name: "1", key: "@"}}
                }}
           },
           %{
             env:
-              {:valueFrom,
+              {:value_from,
                %{
                  name: "praveen",
-                 valueFrom: {:configMapKeyRef, %{name: "1", key: "@"}}
+                 value_from: {:config_map_key_ref, %{name: "1", key: "@"}}
                }}
           }
         ]

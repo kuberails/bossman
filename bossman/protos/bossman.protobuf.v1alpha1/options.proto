@@ -5,46 +5,56 @@ package bossman.protobuf.v1alpha1;
 import "google/protobuf/wrappers.proto";
 
 message Options {
-  google.protobuf.Int32Value timeout = 1;
-  google.protobuf.StringValue docker_image = 2;       // required
+  google.protobuf.Int32Value timeout = 1;             // optional
   google.protobuf.StringValue image_pull_secrets = 3; // optional
-  map<string, string> annotations = 4;
-  google.protobuf.StringValue namespace = 5;    // default=default
-  google.protobuf.Int32Value backoff_limit = 6; // optional
-  google.protobuf.Int32Value completions = 7;   // optional
-  google.protobuf.Int32Value parallelism = 8;   // optional
-  repeated string args = 9;                     // optional
-  repeated string command = 10;                 // optional
-  repeated Env env = 11;
-  repeated EnvFrom envFrom = 12;
+  map<string, string> annotations = 4;                // optional
+  google.protobuf.StringValue namespace = 5;          // default=default
+  google.protobuf.Int32Value retries = 6;             // optional
+  google.protobuf.Int32Value completions = 7;         // optional
+  google.protobuf.Int32Value parallelism = 8;         // optional
+  repeated string args = 9;                           // optional
+  repeated string command = 10;                       // optional
+  repeated Env env = 11;                              // optional
+  repeated EnvFrom env_from = 12;                     // optional
 
   message Env {
     oneof env {
       EnvValue value = 2;
-      EnvFrom valueFrom = 3;
+      EnvFrom value_from = 3;
+    }
+
+    message EnvFrom {
+      string name = 1;
+      oneof value_from {
+        SecretKeyRef secret_key_ref = 2;
+        ConfigMapKeyRef config_map_key_ref = 3;
+      }
+    }
+
+    message EnvValue {
+      string name = 1;
+      string value = 2;
+    }
+
+    message ConfigMapKeyRef {
+      string name = 2;
+      string key = 1;
+    }
+
+    message SecretKeyRef {
+      string name = 2;
+      string key = 1;
     }
   }
 
   message EnvFrom {
-    string name = 1;
-    oneof valueFrom {
-      SecretKeyRef secretKeyRef = 2;
-      ConfigMapKeyRef configMapKeyRef = 3;
+    oneof env_from {
+      SecretKeyRef secret_key_ref = 1;
+      ConfigMapKeyRef config_map_key_ref = 2;
     }
-  }
 
-  message EnvValue {
-    string name = 1;
-    string value = 2;
-  }
+    message ConfigMapKeyRef { string key = 1; }
 
-  message ConfigMapKeyRef {
-    string key = 1;
-    string name = 2;
-  }
-
-  message SecretKeyRef {
-    string key = 1;
-    string name = 2;
+    message SecretKeyRef { string key = 1; }
   }
 }

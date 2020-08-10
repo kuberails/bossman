@@ -1,10 +1,11 @@
 defmodule Bossman.Job.Client do
   use GRPC.Server, service: Bossman.Protobuf.V1alpha1.JobService.Service
 
-  def perform() do
+  def perform(name, options) do
     {:ok, channel} = GRPC.Stub.connect("localhost:50051")
 
-    request = Bossman.Protobuf.V1alpha1.Job.PerformRequest.new(name: %{value: "samplejob"})
+    request =
+      Bossman.Protobuf.V1alpha1.Job.PerformRequest.new(name: %{value: name}, options: options)
 
     {:ok, reply} = Bossman.Protobuf.V1alpha1.JobService.Stub.perform(channel, request)
 
