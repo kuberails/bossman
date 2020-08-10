@@ -127,3 +127,27 @@ defmodule Bossman.Protobuf.V1alpha1.GetListResponse do
 
   field :jobs, 1, repeated: true, type: Bossman.Protobuf.V1alpha1.Job
 end
+
+defmodule Bossman.Protobuf.V1alpha1.JobService.Service do
+  @moduledoc false
+  use GRPC.Service, name: "bossman.protobuf.v1alpha1.JobService"
+
+  rpc :Get, Bossman.Protobuf.V1alpha1.GetRequest, Bossman.Protobuf.V1alpha1.GetResponse
+
+  rpc :GetStatus,
+      Bossman.Protobuf.V1alpha1.GetStatusRequest,
+      Bossman.Protobuf.V1alpha1.GetStatusResponse
+
+  rpc :GetList,
+      Bossman.Protobuf.V1alpha1.GetListRequest,
+      Bossman.Protobuf.V1alpha1.GetListResponse
+
+  rpc :Perform,
+      Bossman.Protobuf.V1alpha1.PerformRequest,
+      Bossman.Protobuf.V1alpha1.PerformResponse
+end
+
+defmodule Bossman.Protobuf.V1alpha1.JobService.Stub do
+  @moduledoc false
+  use GRPC.Stub, service: Bossman.Protobuf.V1alpha1.JobService.Service
+end

@@ -21,6 +21,10 @@ defmodule BossmanWorker.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:grpc, github: "elixir-grpc/grpc"},
+      {:cowlib, "~> 2.9.0", override: true},
+
+      # protobuf
       {:protobuf, "~> 0.7.1"},
       {:google_protos, "~> 0.1"}
     ]
