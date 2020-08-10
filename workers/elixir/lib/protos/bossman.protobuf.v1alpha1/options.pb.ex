@@ -92,11 +92,11 @@ defmodule Bossman.Protobuf.V1alpha1.Options.EnvFrom.ConfigMapKeyRef do
   use Protobuf, syntax: :proto3
 
   @type t :: %__MODULE__{
-          key: String.t()
+          name: String.t()
         }
-  defstruct [:key]
+  defstruct [:name]
 
-  field :key, 1, type: :string
+  field :name, 1, type: :string
 end
 
 defmodule Bossman.Protobuf.V1alpha1.Options.EnvFrom.SecretKeyRef do
@@ -104,11 +104,11 @@ defmodule Bossman.Protobuf.V1alpha1.Options.EnvFrom.SecretKeyRef do
   use Protobuf, syntax: :proto3
 
   @type t :: %__MODULE__{
-          key: String.t()
+          name: String.t()
         }
-  defstruct [:key]
+  defstruct [:name]
 
-  field :key, 1, type: :string
+  field :name, 1, type: :string
 end
 
 defmodule Bossman.Protobuf.V1alpha1.Options.EnvFrom do

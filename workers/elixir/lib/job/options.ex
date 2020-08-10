@@ -1,7 +1,20 @@
 defmodule Bossman.Job.Options do
   alias Bossman.Job.Options
   alias Bossman.Job.Options.Encode
+  alias Bossman.Job.Options.Decode
   use TypedStruct
+
+  @optional_fields [
+    :namespace,
+    :image_pull_secrets,
+    :retries,
+    :completions,
+    :parallelism,
+    :timeout
+  ]
+
+  @doc false
+  def optional_fields(), do: @optional_fields
 
   typedstruct do
     @typedoc "Options"
@@ -50,6 +63,15 @@ defmodule Bossman.Job.Options do
     struct(Options, options)
   end
 
+  @spec encode!(Options.t()) :: Bossman.Protobuf.V1alpha1.Options.t()
+  def encode!(options), do: Encode.encode!(options)
+
   @spec encode(Options.t()) :: {:ok, Bossman.Protobuf.V1alpha1.Options.t()} | {:error, String.t()}
   def encode(options), do: Encode.encode(options)
+
+  @spec decode!(Bossman.Protobuf.V1alpha1.Options.t()) :: Options.t()
+  def decode!(options), do: Decode.decode!(options)
+
+  @spec decode(Bossman.Protobuf.V1alpha1.Options.t()) :: {:ok, Options.t()} | {:error, String.t()}
+  def decode(options), do: Decode.decode(options)
 end

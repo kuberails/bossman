@@ -95,12 +95,12 @@ pub mod options {
         #[derive(Clone, PartialEq, ::prost::Message)]
         pub struct ConfigMapKeyRef {
             #[prost(string, tag="1")]
-            pub key: std::string::String,
+            pub name: std::string::String,
         }
         #[derive(Clone, PartialEq, ::prost::Message)]
         pub struct SecretKeyRef {
             #[prost(string, tag="1")]
-            pub key: std::string::String,
+            pub name: std::string::String,
         }
         #[derive(Clone, PartialEq, ::prost::Oneof)]
         pub enum EnvFrom {

@@ -53,8 +53,8 @@ message Options {
       ConfigMapKeyRef config_map_key_ref = 2;
     }
 
-    message ConfigMapKeyRef { string key = 1; }
+    message ConfigMapKeyRef { string name = 1; }
 
-    message SecretKeyRef { string key = 1; }
+    message SecretKeyRef { string name = 1; }
   }
 }
