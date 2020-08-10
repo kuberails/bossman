@@ -5,10 +5,13 @@ authors = ["Praveen Perera <ppraveen25@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+# grpc
 tonic = "0.3"
 prost = "0.6"
 tokio = { version = "0.2", features = ["macros"] }
 
+# utils
+uuid = { version = "0.8", features = ["v4"] }
 
 [build-dependencies]
 tonic-build = "0.3"

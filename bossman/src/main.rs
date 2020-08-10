@@ -1,8 +1,11 @@
-use bossman::job::{GetRequest, GetResponse};
+use bossman::job::{GetRequest, GetResponse, PerformRequest, PerformResponse};
 use bossman::job_service_server::{JobService, JobServiceServer};
 use bossman::Job;
+use uuid::Uuid;
 
 use tonic::{transport::Server, Request, Response, Status};
+
+type TonicResponse<T> = Result<Response<T>, Status>;
 
 #[derive(Debug, Default)]
 pub struct JobServer {}
@@ -13,10 +16,16 @@ pub mod bossman {
 
 #[tonic::async_trait]
 impl JobService for JobServer {
-    async fn get(&self, request: Request<GetRequest>) -> Result<Response<GetResponse>, Status> {
-        println!("Got a request from {:?}", request.remote_addr());
-        println!("Request: {:#?}", request);
+    async fn perform(&self, request: Request<PerformRequest>) -> TonicResponse<PerformResponse> {
+        let reply = PerformResponse {
+            id: Uuid::new_v4().to_string(),
+            status: bossman::job::Status::Waiting.into(),
+        };
 
+        Ok(Response::new(reply))
+    }
+
+    async fn get(&self, request: Request<GetRequest>) -> TonicResponse<GetResponse> {
         let reply = GetResponse {
             job: Some(Job {
                 name: "test".to_string(),

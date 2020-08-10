@@ -49,9 +49,9 @@ message Job {
 }
 
 service JobService {
+  rpc Perform(Job.PerformRequest) returns (Job.PerformResponse) {}
   rpc Get(Job.GetRequest) returns (Job.GetResponse) {}
+
   // rpc GetStatus(Job.GetStatusRequest) returns (Job.GetStatusResponse) {}
   // rpc GetList(Job.GetListRequest) returns (Job.GetListResponse) {}
-
-  // rpc Perform(Job.PerformRequest) returns (Job.PerformResponse) {}
 }

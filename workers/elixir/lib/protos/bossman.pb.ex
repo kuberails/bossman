@@ -132,6 +132,10 @@ defmodule Bossman.Protobuf.V1alpha1.JobService.Service do
   @moduledoc false
   use GRPC.Service, name: "bossman.protobuf.v1alpha1.JobService"
 
+  rpc :Perform,
+      Bossman.Protobuf.V1alpha1.Job.PerformRequest,
+      Bossman.Protobuf.V1alpha1.Job.PerformResponse
+
   rpc :Get, Bossman.Protobuf.V1alpha1.Job.GetRequest, Bossman.Protobuf.V1alpha1.Job.GetResponse
 end
 
