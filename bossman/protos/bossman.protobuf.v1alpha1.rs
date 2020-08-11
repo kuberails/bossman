@@ -140,19 +140,20 @@ pub mod job {
     }
     #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct PerformResponse {
-        #[prost(string, tag="1")]
-        pub id: std::string::String,
-        #[prost(enumeration="Status", tag="2")]
-        pub status: i32,
+        #[prost(message, optional, tag="1")]
+        pub job: ::std::option::Option<super::Job>,
     }
     /// get_status()
     #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct GetStatusRequest {
         #[prost(string, tag="1")]
-        pub name: std::string::String,
+        pub job_id: std::string::String,
     }
-    // get_status()
-
+    #[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct GetStatusResponse {
+        #[prost(enumeration="Status", tag="1")]
+        pub status: i32,
+    }
     /// get()
     #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct GetRequest {
@@ -163,11 +164,6 @@ pub mod job {
     pub struct GetResponse {
         #[prost(message, optional, tag="1")]
         pub job: ::std::option::Option<super::Job>,
-    }
-    #[derive(Clone, PartialEq, ::prost::Message)]
-    pub struct GetStatusResponse {
-        #[prost(string, tag="1")]
-        pub job_id: std::string::String,
     }
     /// get_list()
     #[derive(Clone, PartialEq, ::prost::Message)]

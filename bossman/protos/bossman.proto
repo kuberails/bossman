@@ -28,15 +28,12 @@ message Job {
     Options options = 3;                               // required
   }
 
-  message PerformResponse {
-    string id = 1;
-    Status status = 2;
-  }
+  message PerformResponse { Job job = 1; }
   // perform()
 
   // get_status()
-  message GetStatusRequest { string name = 1; }
-
+  message GetStatusRequest { string job_id = 1; }
+  message GetStatusResponse { Status status = 1; }
   // get_status()
 
   // get()
@@ -44,12 +41,10 @@ message Job {
   message GetResponse { Job job = 1; }
   // get()
 
-  message GetStatusResponse { string job_id = 1; }
-
   // get_list()
   message GetListRequest { string name = 1; }
   message GetListResponse { repeated Job jobs = 1; }
-  //
+  // get_list()
 }
 
 service JobService {

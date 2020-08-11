@@ -1,14 +1,22 @@
 defmodule Bossman.Job.Options.Decode do
   alias Bossman.Job.Options
 
-  @spec decode!(Bossman.Protobuf.V1alpha1.Options.t()) :: Options.t()
-  def decode!(options) do
-    {:ok, options} = decode(options)
-    options
+  defmodule Error do
+    defexception [:message]
   end
 
   @spec decode(Bossman.Protobuf.V1alpha1.Options.t()) :: {:ok, Options.t()} | {:error, String.t()}
   def decode(options) do
+    try do
+      {:ok, decode!(options)}
+    catch
+      error ->
+        {:error, %Error{message: "Unable to decode options: #{inspect(error)}"}}
+    end
+  end
+
+  @spec decode!(Bossman.Protobuf.V1alpha1.Options.t()) :: Options.t()
+  def decode!(options) do
     env = decode_env(options.env)
     env_from = decode_env_from(options.env_from)
 
@@ -19,10 +27,9 @@ defmodule Bossman.Job.Options.Decode do
       |> Enum.map(fn {key, value} -> {key, decode_optional(value)} end)
       |> Enum.into(%{})
 
-    {:ok,
-     options
-     |> Map.merge(%{env: env, env_from: env_from})
-     |> Options.new()}
+    options
+    |> Map.merge(%{env: env, env_from: env_from})
+    |> Options.new()
   end
 
   defp decode_optional(nil), do: nil
