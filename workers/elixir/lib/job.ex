@@ -12,4 +12,8 @@ defmodule Bossman.Job do
       error -> error
     end
   end
+
+  def get(id) do
+    Client.get(id)
+  end
 end
