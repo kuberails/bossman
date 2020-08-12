@@ -33,7 +33,7 @@ defmodule BossmanWorker.MixProject do
       {:typed_struct, "~> 0.2.1"},
 
       # testing
-      {:mix_test_watch, "~> 1.0", only: :dev}
+      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false}
     ]
   end
 end

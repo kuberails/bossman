@@ -1,3 +1,5 @@
+mod db;
+
 use bossman::job::{self, GetRequest, GetResponse, PerformRequest, PerformResponse};
 use bossman::job_service_server::{JobService, JobServiceServer};
 use bossman::Job;
@@ -19,12 +21,15 @@ pub mod bossman {
 pub enum Error {
     #[error("missing the required field in your request: {0})")]
     RequiredRequestFieldMissing(&'static str),
+    #[error(transparent)]
+    DbError(#[from] db::Error),
 }
 
 impl From<Error> for Status {
     fn from(error: Error) -> Self {
         match error {
             e @ Error::RequiredRequestFieldMissing(_) => Status::invalid_argument(e.to_string()),
+            Error::DbError(e) => Status::invalid_argument(e.to_string()),
         }
     }
 }
@@ -34,31 +39,31 @@ impl JobService for JobServer {
     async fn perform(&self, request: Request<PerformRequest>) -> TonicResponse<PerformResponse> {
         let request = request.into_inner();
 
-        let reply = PerformResponse {
-            job: Some(Job {
-                id: Uuid::new_v4().to_string(),
-                docker_image_name: request
-                    .docker_image_name
-                    .ok_or(Error::RequiredRequestFieldMissing("docker_image_name"))?,
-                name: request
-                    .name
-                    .ok_or(Error::RequiredRequestFieldMissing("name"))?,
-                status: job::Status::Waiting.into(),
-                options: request.options,
-            }),
+        let job = Job {
+            id: Uuid::new_v4().to_string(),
+            docker_image_name: request
+                .docker_image_name
+                .ok_or(Error::RequiredRequestFieldMissing("docker_image_name"))?,
+            name: request
+                .name
+                .ok_or(Error::RequiredRequestFieldMissing("name"))?,
+            status: job::Status::Waiting.into(),
+            options: request.options,
         };
+
+        db::save_job(&job).await.map_err(Error::DbError)?;
+
+        let reply = PerformResponse { job: Some(job) };
 
         Ok(Response::new(reply))
     }
 
-    async fn get(&self, _request: Request<GetRequest>) -> TonicResponse<GetResponse> {
-        let reply = GetResponse {
-            job: Some(Job {
-                name: "test".to_string(),
-                id: "uuid".to_string(),
-                ..Job::default()
-            }),
-        };
+    async fn get(&self, request: Request<GetRequest>) -> TonicResponse<GetResponse> {
+        let job = db::get_job(&request.into_inner().id)
+            .await
+            .map_err(Error::DbError)?;
+
+        let reply = GetResponse { job: Some(job) };
 
         Ok(Response::new(reply))
     }

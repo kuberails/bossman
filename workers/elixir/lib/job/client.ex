@@ -18,13 +18,14 @@ defmodule Bossman.Job.Client do
     end
   end
 
-  def get() do
+  def get(id) do
     {:ok, channel} = GRPC.Stub.connect("localhost:50051")
 
-    request = Bossman.Protobuf.V1alpha1.Job.GetRequest.new(id: "get-id")
+    request = Bossman.Protobuf.V1alpha1.Job.GetRequest.new(id: id)
     {:ok, reply} = Bossman.Protobuf.V1alpha1.JobService.Stub.get(channel, request)
 
     Task.start(fn -> GRPC.Stub.disconnect(channel) end)
-    reply.job
+
+    {:ok, reply}
   end
 end
