@@ -18,21 +18,21 @@ defmodule Bossman.Job.Options do
 
   typedstruct do
     @typedoc "Options"
-    field(:namespace, String.t())
+    field :namespace, String.t()
 
-    field(:image_pull_secrets, String.t())
-    field(:annotations, %{String.t() => String.t()})
+    field :image_pull_secrets, String.t()
+    field :annotations, %{String.t() => String.t()}
 
-    field(:retries, integer(), default: 5)
-    field(:completions, integer(), default: 1)
-    field(:parallelism, integer(), default: 1)
+    field :retries, integer(), default: 5
+    field :completions, integer(), default: 1
+    field :parallelism, integer(), default: 1
 
-    field(:timeout, integer)
-    field(:args, [String.t()])
-    field(:command, [String.t()])
+    field :timeout, integer
+    field :args, [String.t()]
+    field :command, [String.t()]
 
-    field(:env, Env.t(), default: [])
-    field(:env_from, EnvFrom.t(), default: [])
+    field :env, Env.t(), default: []
+    field :env_from, EnvFrom.t(), default: []
   end
 
   defmodule Env do

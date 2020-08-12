@@ -25,6 +25,7 @@ defmodule Bossman.Job.Client do
     {:ok, reply} = Bossman.Protobuf.V1alpha1.JobService.Stub.get(channel, request)
 
     Task.start(fn -> GRPC.Stub.disconnect(channel) end)
-    reply.job
+
+    {:ok, reply}
   end
 end
