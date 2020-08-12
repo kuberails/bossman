@@ -1,9 +1,8 @@
-use bincode;
+mod db;
+
 use bossman::job::{self, GetRequest, GetResponse, PerformRequest, PerformResponse};
 use bossman::job_service_server::{JobService, JobServiceServer};
 use bossman::Job;
-use redis;
-use redis::Commands;
 use thiserror::Error;
 use uuid::Uuid;
 
@@ -22,12 +21,15 @@ pub mod bossman {
 pub enum Error {
     #[error("missing the required field in your request: {0})")]
     RequiredRequestFieldMissing(&'static str),
+    #[error(transparent)]
+    DbError(#[from] db::Error),
 }
 
 impl From<Error> for Status {
     fn from(error: Error) -> Self {
         match error {
             e @ Error::RequiredRequestFieldMissing(_) => Status::invalid_argument(e.to_string()),
+            Error::DbError(e) => Status::invalid_argument(e.to_string()),
         }
     }
 }
@@ -36,10 +38,6 @@ impl From<Error> for Status {
 impl JobService for JobServer {
     async fn perform(&self, request: Request<PerformRequest>) -> TonicResponse<PerformResponse> {
         let request = request.into_inner();
-
-        // connect to redis
-        let client = redis::Client::open("redis://127.0.0.1/").unwrap();
-        let mut con = client.get_connection().unwrap();
 
         let job = Job {
             id: Uuid::new_v4().to_string(),
@@ -53,9 +51,7 @@ impl JobService for JobServer {
             options: request.options,
         };
 
-        let encoded_job: Vec<u8> = bincode::serialize(&job).unwrap();
-
-        let _: () = con.set(&job.id, encoded_job).unwrap();
+        db::save_job(&job).await.map_err(Error::DbError)?;
 
         let reply = PerformResponse { job: Some(job) };
 
@@ -63,15 +59,9 @@ impl JobService for JobServer {
     }
 
     async fn get(&self, request: Request<GetRequest>) -> TonicResponse<GetResponse> {
-        let request = request.into_inner();
-
-        // connect to redis
-        let client = redis::Client::open("redis://127.0.0.1/").unwrap();
-        let mut con = client.get_connection().unwrap();
-
-        let encoded_job: Vec<u8> = con.get(&request.id).unwrap();
-
-        let job = bincode::deserialize(&encoded_job).unwrap();
+        let job = db::get_job(&request.into_inner().id)
+            .await
+            .map_err(Error::DbError)?;
 
         let reply = GetResponse { job: Some(job) };
 
