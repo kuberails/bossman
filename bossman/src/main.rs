@@ -1,6 +1,9 @@
+use bincode;
 use bossman::job::{self, GetRequest, GetResponse, PerformRequest, PerformResponse};
 use bossman::job_service_server::{JobService, JobServiceServer};
 use bossman::Job;
+use redis;
+use redis::Commands;
 use thiserror::Error;
 use uuid::Uuid;
 
@@ -34,31 +37,43 @@ impl JobService for JobServer {
     async fn perform(&self, request: Request<PerformRequest>) -> TonicResponse<PerformResponse> {
         let request = request.into_inner();
 
-        let reply = PerformResponse {
-            job: Some(Job {
-                id: Uuid::new_v4().to_string(),
-                docker_image_name: request
-                    .docker_image_name
-                    .ok_or(Error::RequiredRequestFieldMissing("docker_image_name"))?,
-                name: request
-                    .name
-                    .ok_or(Error::RequiredRequestFieldMissing("name"))?,
-                status: job::Status::Waiting.into(),
-                options: request.options,
-            }),
+        // connect to redis
+        let client = redis::Client::open("redis://127.0.0.1/").unwrap();
+        let mut con = client.get_connection().unwrap();
+
+        let job = Job {
+            id: Uuid::new_v4().to_string(),
+            docker_image_name: request
+                .docker_image_name
+                .ok_or(Error::RequiredRequestFieldMissing("docker_image_name"))?,
+            name: request
+                .name
+                .ok_or(Error::RequiredRequestFieldMissing("name"))?,
+            status: job::Status::Waiting.into(),
+            options: request.options,
         };
+
+        let encoded_job: Vec<u8> = bincode::serialize(&job).unwrap();
+
+        let _: () = con.set(&job.id, encoded_job).unwrap();
+
+        let reply = PerformResponse { job: Some(job) };
 
         Ok(Response::new(reply))
     }
 
-    async fn get(&self, _request: Request<GetRequest>) -> TonicResponse<GetResponse> {
-        let reply = GetResponse {
-            job: Some(Job {
-                name: "test".to_string(),
-                id: "uuid".to_string(),
-                ..Job::default()
-            }),
-        };
+    async fn get(&self, request: Request<GetRequest>) -> TonicResponse<GetResponse> {
+        let request = request.into_inner();
+
+        // connect to redis
+        let client = redis::Client::open("redis://127.0.0.1/").unwrap();
+        let mut con = client.get_connection().unwrap();
+
+        let encoded_job: Vec<u8> = con.get(&request.id).unwrap();
+
+        let job = bincode::deserialize(&encoded_job).unwrap();
+
+        let reply = GetResponse { job: Some(job) };
 
         Ok(Response::new(reply))
     }
