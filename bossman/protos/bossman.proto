@@ -31,14 +31,11 @@ message Job {
   message PerformResponse { Job job = 1; }
   // perform()
 
-  // get_status()
-  message GetStatusRequest { string job_id = 1; }
-  message GetStatusResponse { Status status = 1; }
-  // get_status()
-
   // get()
   message GetRequest { string id = 1; }
+
   message GetResponse { Job job = 1; }
+  message GetStatusResponse { Status status = 1; }
   // get()
 
   // get_list()
@@ -51,6 +48,6 @@ service JobService {
   rpc Perform(Job.PerformRequest) returns (Job.PerformResponse) {}
   rpc Get(Job.GetRequest) returns (Job.GetResponse) {}
 
-  // rpc GetStatus(Job.GetStatusRequest) returns (Job.GetStatusResponse) {}
+  rpc GetStatus(Job.GetRequest) returns (Job.GetStatusResponse) {}
   // rpc GetList(Job.GetListRequest) returns (Job.GetListResponse) {}
 }

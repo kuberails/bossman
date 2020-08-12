@@ -4,28 +4,39 @@ defmodule Bossman.Job.Client do
 
   @spec perform(%{value: String.t()}, %{value: String.t()}, Options.t()) :: {:ok, any}
   def perform(name, docker_image_name, options) do
-    with {:connect, {:ok, channel}} <- {:connect, GRPC.Stub.connect("localhost:50051")},
-         request <-
-           Bossman.Protobuf.V1alpha1.Job.PerformRequest.new(
-             name: name,
-             docker_image_name: docker_image_name,
-             options: options
-           ),
-         {:reply, {:ok, reply}} <-
-           {:reply, Bossman.Protobuf.V1alpha1.JobService.Stub.perform(channel, request)} do
-      Task.start(fn -> GRPC.Stub.disconnect(channel) end)
-      {:ok, reply}
-    end
+    connect_and_do(fn channel ->
+      request =
+        Bossman.Protobuf.V1alpha1.Job.PerformRequest.new(
+          name: name,
+          docker_image_name: docker_image_name,
+          options: options
+        )
+
+      Bossman.Protobuf.V1alpha1.JobService.Stub.perform(channel, request)
+    end)
   end
 
   def get(id) do
-    {:ok, channel} = GRPC.Stub.connect("localhost:50051")
+    connect_and_do(fn channel ->
+      request = Bossman.Protobuf.V1alpha1.Job.GetRequest.new(id: id)
+      Bossman.Protobuf.V1alpha1.JobService.Stub.get(channel, request)
+    end)
+  end
 
-    request = Bossman.Protobuf.V1alpha1.Job.GetRequest.new(id: id)
-    {:ok, reply} = Bossman.Protobuf.V1alpha1.JobService.Stub.get(channel, request)
+  def get_status(id) do
+    connect_and_do(fn channel ->
+      request = Bossman.Protobuf.V1alpha1.Job.GetRequest.new(id: id)
+      Bossman.Protobuf.V1alpha1.JobService.Stub.get_status(channel, request)
+    end)
+  end
 
-    Task.start(fn -> GRPC.Stub.disconnect(channel) end)
-
-    {:ok, reply}
+  defp connect_and_do(func_block) do
+    with {:connect, {:ok, channel}} <- {:connect, GRPC.Stub.connect("localhost:50051")},
+         {:reply, {:ok, reply}} <- {:reply, func_block.(channel)} do
+      Task.start(fn -> GRPC.Stub.disconnect(channel) end)
+      {:ok, reply}
+    else
+      error -> error
+    end
   end
 end

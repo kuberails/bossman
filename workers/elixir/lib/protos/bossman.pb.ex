@@ -38,30 +38,6 @@ defmodule Bossman.Protobuf.V1alpha1.Job.PerformResponse do
   field :job, 1, type: Bossman.Protobuf.V1alpha1.Job
 end
 
-defmodule Bossman.Protobuf.V1alpha1.Job.GetStatusRequest do
-  @moduledoc false
-  use Protobuf, syntax: :proto3
-
-  @type t :: %__MODULE__{
-          job_id: String.t()
-        }
-  defstruct [:job_id]
-
-  field :job_id, 1, type: :string
-end
-
-defmodule Bossman.Protobuf.V1alpha1.Job.GetStatusResponse do
-  @moduledoc false
-  use Protobuf, syntax: :proto3
-
-  @type t :: %__MODULE__{
-          status: Bossman.Protobuf.V1alpha1.Job.Status.t()
-        }
-  defstruct [:status]
-
-  field :status, 1, type: Bossman.Protobuf.V1alpha1.Job.Status, enum: true
-end
-
 defmodule Bossman.Protobuf.V1alpha1.Job.GetRequest do
   @moduledoc false
   use Protobuf, syntax: :proto3
@@ -84,6 +60,18 @@ defmodule Bossman.Protobuf.V1alpha1.Job.GetResponse do
   defstruct [:job]
 
   field :job, 1, type: Bossman.Protobuf.V1alpha1.Job
+end
+
+defmodule Bossman.Protobuf.V1alpha1.Job.GetStatusResponse do
+  @moduledoc false
+  use Protobuf, syntax: :proto3
+
+  @type t :: %__MODULE__{
+          status: Bossman.Protobuf.V1alpha1.Job.Status.t()
+        }
+  defstruct [:status]
+
+  field :status, 1, type: Bossman.Protobuf.V1alpha1.Job.Status, enum: true
 end
 
 defmodule Bossman.Protobuf.V1alpha1.Job.GetListRequest do
@@ -139,6 +127,10 @@ defmodule Bossman.Protobuf.V1alpha1.JobService.Service do
       Bossman.Protobuf.V1alpha1.Job.PerformResponse
 
   rpc :Get, Bossman.Protobuf.V1alpha1.Job.GetRequest, Bossman.Protobuf.V1alpha1.Job.GetResponse
+
+  rpc :GetStatus,
+      Bossman.Protobuf.V1alpha1.Job.GetRequest,
+      Bossman.Protobuf.V1alpha1.Job.GetStatusResponse
 end
 
 defmodule Bossman.Protobuf.V1alpha1.JobService.Stub do

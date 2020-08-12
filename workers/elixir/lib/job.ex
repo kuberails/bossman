@@ -8,7 +8,11 @@ defmodule Bossman.Job do
 
     field :docker_image_name, String.t(), required: true
     field :options, Options.t(), required: true
-    field :status, Bossman.Protobuf.V1alpha1.Job.Status.t()
+    field :status, Job.Status.t()
+  end
+
+  defmodule Status do
+    @type t :: Bossman.Protobuf.V1alpha1.Job.Status.t()
   end
 
   @spec perform(String.t(), String.t(), map()) :: {:ok, any} | {:error, any}
@@ -23,10 +27,22 @@ defmodule Bossman.Job do
     end
   end
 
+  @spec get(String.t()) :: {:ok, Job.t()} | {:error, any}
   def get(id) do
     with {:ok, reply} <- Client.get(id),
          {:ok, job} <- Decode.decode(reply.job) do
       {:ok, job}
+    else
+      error -> error
+    end
+  end
+
+  @spec get_status(String.t()) :: {:ok, Job.Status.t()} | {:error, any}
+  def get_status(id) do
+    with {:ok, reply} <- Client.get_status(id) do
+      {:ok, reply.status}
+    else
+      error -> error
     end
   end
 end
