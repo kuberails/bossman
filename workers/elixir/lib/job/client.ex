@@ -43,6 +43,7 @@ defmodule Bossman.Job.Client do
       Task.start(fn -> GRPC.Stub.disconnect(channel) end)
       {:ok, reply}
     else
+      {:reply, {:error, %GRPC.RPCError{message: message}}} -> {:error, URI.decode(message)}
       error -> error
     end
   end

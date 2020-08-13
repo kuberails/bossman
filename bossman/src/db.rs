@@ -20,11 +20,14 @@ pub enum Error {
     #[error("unable to read: {0}")]
     UnableToRead(redis::RedisError),
 
+    #[error("unable to find job for id: {0}")]
+    UnableToFindJob(String),
+
+    #[error("unable to find jobs for name: {0}")]
+    UnableToFindJobList(String),
+
     #[error("unmatched redis error: {0}")]
     OtherRedisError(#[from] redis::RedisError),
-
-    #[error("unable to find job for: {0}")]
-    NotFound(String),
 }
 
 pub async fn save_job(job: &Job) -> Result<(), Error> {
@@ -75,7 +78,7 @@ async fn connect() -> Result<redis::aio::Connection, Error> {
 
 fn deserialize_job(encoded: Vec<u8>, id: &str) -> Result<Job, Error> {
     if encoded.is_empty() {
-        Err(Error::NotFound(id.to_string()))
+        Err(Error::UnableToFindJob(id.to_string()))
     } else {
         bincode::deserialize(&encoded).map_err(|_| Error::DecodingFailed)
     }
@@ -87,7 +90,7 @@ async fn multi_get(
     name: &str,
 ) -> Result<Vec<Vec<u8>>, Error> {
     match job_ids.as_slice() {
-        [] => Err(Error::NotFound(name.to_string())),
+        [] => Err(Error::UnableToFindJobList(name.to_string())),
         [id] => {
             let encoded_job: Vec<u8> = conn.get(id).await.map_err(Error::UnableToRead)?;
             Ok(vec![encoded_job])
