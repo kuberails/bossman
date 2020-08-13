@@ -55,7 +55,7 @@ pub async fn get_jobs_by_name(name: &str) -> Result<Vec<Job>, Error> {
     let job_ids: Vec<String> = conn.smembers(name).await?;
 
 
-    let encoded_jobs: Vec<Vec<u8>> = conn.get(job_ids).await?;
+    let encoded_jobs: Vec<Vec<u8>> = multi_get(conn, job_ids, name).await?;
 
     Ok(encoded_jobs
         .into_iter()
@@ -74,9 +74,28 @@ async fn connect() -> Result<redis::aio::Connection, Error> {
 }
 
 fn deserialize_job(encoded: Vec<u8>, id: &str) -> Result<Job, Error> {
-    if encoded.len() > 0 {
-        bincode::deserialize(&encoded).map_err(|_| Error::DecodingFailed)
-    } else {
+    if encoded.is_empty() {
         Err(Error::NotFound(id.to_string()))
+    } else {
+        bincode::deserialize(&encoded).map_err(|_| Error::DecodingFailed)
+    }
+}
+
+async fn multi_get(
+    mut conn: redis::aio::Connection,
+    job_ids: Vec<String>,
+    name: &str,
+) -> Result<Vec<Vec<u8>>, Error> {
+    match job_ids.len() {
+        0 => Err(Error::NotFound(name.to_string())),
+        1 => {
+            let id = job_ids
+                .first()
+                .expect("we already know theres atleast one element");
+
+            let encoded_job: Vec<u8> = conn.get(id).await.map_err(Error::UnableToRead)?;
+            Ok(vec![encoded_job])
+        }
+        _ => Ok(conn.get(job_ids).await?),
     }
 }
