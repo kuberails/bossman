@@ -1,6 +1,4 @@
 use crate::bossman::Job;
-use redis::aio::Connection;
-use redis::AsyncCommands;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -32,69 +30,76 @@ pub enum Error {
 
 // public methods
 pub async fn save_job(job: &Job) -> Result<(), Error> {
-    let conn = connect().await?;
-    conn_save_job(conn, job).await
+    let conn = internal::connect().await?;
+    internal::save_job(conn, job).await
 }
 
 pub async fn get_job(id: &str) -> Result<Job, Error> {
-    let conn = connect().await?;
-    conn_get_job(conn, id).await
+    let conn = internal::connect().await?;
+    internal::get_job(conn, id).await
 }
 
 pub async fn get_jobs_by_name(name: &str) -> Result<Vec<Job>, Error> {
-    let conn = connect().await?;
-    conn_get_jobs_by_name(conn, name).await
+    let conn = internal::connect().await?;
+    internal::get_jobs_by_name(conn, name).await
 }
 
 // implementation private functions
-async fn connect() -> Result<Connection, Error> {
-    let client =
-        redis::Client::open("redis://127.0.0.1/").map_err(Error::UnableToEstablishConnection)?;
+mod internal {
+    use crate::bossman::Job;
+    use crate::db::Error;
+    use redis::aio::Connection;
+    use redis::AsyncCommands;
 
-    client
-        .get_async_connection()
-        .await
-        .map_err(Error::UnableToEstablishConnection)
-}
+    pub async fn connect() -> Result<Connection, Error> {
+        let client = redis::Client::open("redis://127.0.0.1/")
+            .map_err(Error::UnableToEstablishConnection)?;
 
-async fn conn_get_job(mut conn: Connection, id: &str) -> Result<Job, Error> {
-    let encoded_job: Vec<u8> = conn.get(id).await.map_err(Error::UnableToRead)?;
-
-    match encoded_job.as_slice() {
-        [] => Err(Error::UnableToFindJob(id.to_string())),
-        _ => bincode::deserialize(&encoded_job).map_err(|_| Error::DecodingFailed),
+        client
+            .get_async_connection()
+            .await
+            .map_err(Error::UnableToEstablishConnection)
     }
-}
 
-async fn conn_get_jobs_by_name(mut conn: Connection, name: &str) -> Result<Vec<Job>, Error> {
-    let job_ids: Vec<String> = conn.smembers(name).await?;
+    pub async fn get_job(mut conn: Connection, id: &str) -> Result<Job, Error> {
+        let encoded_job: Vec<u8> = conn.get(id).await.map_err(Error::UnableToRead)?;
 
-    match job_ids.as_slice() {
-        [] => Err(Error::UnableToFindJobList(name.to_string()))?,
-        [id] => {
-            let job = conn_get_job(conn, id).await?;
-            Ok(vec![job])
-        }
-        _ => {
-            let encoded_jobs: Vec<Vec<u8>> = conn.get(job_ids).await?;
-
-            Ok(encoded_jobs
-                .into_iter()
-                .filter_map(|encoded_job| bincode::deserialize(&encoded_job).ok())
-                .collect())
+        match encoded_job.as_slice() {
+            [] => Err(Error::UnableToFindJob(id.to_string())),
+            _ => bincode::deserialize(&encoded_job).map_err(|_| Error::DecodingFailed),
         }
     }
-}
 
-async fn conn_save_job(mut conn: Connection, job: &Job) -> Result<(), Error> {
-    let encoded_job: Vec<u8> = bincode::serialize(job).map_err(|_| Error::EncodingFailed)?;
+    pub async fn get_jobs_by_name(mut conn: Connection, name: &str) -> Result<Vec<Job>, Error> {
+        let job_ids: Vec<String> = conn.smembers(name).await?;
 
-    let _: () = conn
-        .set(&job.id, encoded_job)
-        .await
-        .map_err(Error::UnableToSave)?;
+        match job_ids.as_slice() {
+            [] => Err(Error::UnableToFindJobList(name.to_string()))?,
+            [id] => {
+                let job = get_job(conn, id).await?;
+                Ok(vec![job])
+            }
+            _ => {
+                let encoded_jobs: Vec<Vec<u8>> = conn.get(job_ids).await?;
 
-    let _: () = conn.sadd(&job.name, &job.id).await?;
+                Ok(encoded_jobs
+                    .into_iter()
+                    .filter_map(|encoded_job| bincode::deserialize(&encoded_job).ok())
+                    .collect())
+            }
+        }
+    }
 
-    Ok(())
+    pub async fn save_job(mut conn: Connection, job: &Job) -> Result<(), Error> {
+        let encoded_job: Vec<u8> = bincode::serialize(job).map_err(|_| Error::EncodingFailed)?;
+
+        let _: () = conn
+            .set(&job.id, encoded_job)
+            .await
+            .map_err(Error::UnableToSave)?;
+
+        let _: () = conn.sadd(&job.name, &job.id).await?;
+
+        Ok(())
+    }
 }
