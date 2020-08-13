@@ -1,7 +1,8 @@
 mod db;
 
 use bossman::job::{
-    self, GetRequest, GetResponse, GetStatusResponse, PerformRequest, PerformResponse,
+    self, GetListRequest, GetListResponse, GetRequest, GetResponse, GetStatusResponse,
+    PerformRequest, PerformResponse,
 };
 use bossman::job_service_server::{JobService, JobServiceServer};
 use bossman::Job;
@@ -66,6 +67,16 @@ impl JobService for JobServer {
             .map_err(Error::DbError)?;
 
         let reply = GetResponse { job: Some(job) };
+
+        Ok(Response::new(reply))
+    }
+
+    async fn get_list(&self, request: Request<GetListRequest>) -> TonicResponse<GetListResponse> {
+        let jobs = db::get_jobs_by_name(&request.into_inner().name)
+            .await
+            .map_err(Error::DbError)?;
+
+        let reply = GetListResponse { jobs: jobs };
 
         Ok(Response::new(reply))
     }

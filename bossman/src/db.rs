@@ -1,4 +1,5 @@
 use crate::bossman::Job;
+use redis::aio::Connection;
 use redis::AsyncCommands;
 use thiserror::Error;
 
@@ -18,6 +19,12 @@ pub enum Error {
 
     #[error("unable to read: {0}")]
     UnableToRead(redis::RedisError),
+
+    #[error("unmatched redis error: {0}")]
+    OtherRedisError(#[from] redis::RedisError),
+
+    #[error("unable to find job for: {0}")]
+    NotFound(String),
 }
 
 pub async fn save_job(job: &Job) -> Result<(), Error> {
@@ -30,6 +37,8 @@ pub async fn save_job(job: &Job) -> Result<(), Error> {
         .await
         .map_err(Error::UnableToSave)?;
 
+    let _: () = conn.sadd(&job.name, &job.id).await?;
+
     Ok(())
 }
 
@@ -38,7 +47,20 @@ pub async fn get_job(id: &str) -> Result<Job, Error> {
 
     let encoded_job: Vec<u8> = conn.get(id).await.map_err(Error::UnableToRead)?;
 
-    bincode::deserialize(&encoded_job).map_err(|_| Error::DecodingFailed)
+    deserialize_job(encoded_job, id)
+}
+
+pub async fn get_jobs_by_name(name: &str) -> Result<Vec<Job>, Error> {
+    let mut conn = connect().await?;
+
+    let job_ids: Vec<String> = conn.smembers(name).await?;
+
+    let encoded_jobs: Vec<Vec<u8>> = multi_get(conn, job_ids, name).await?;
+
+    Ok(encoded_jobs
+        .into_iter()
+        .filter_map(|encoded_job| bincode::deserialize(&encoded_job).ok())
+        .collect())
 }
 
 async fn connect() -> Result<redis::aio::Connection, Error> {
@@ -49,4 +71,27 @@ async fn connect() -> Result<redis::aio::Connection, Error> {
         .get_async_connection()
         .await
         .map_err(Error::UnableToEstablishConnection)
+}
+
+fn deserialize_job(encoded: Vec<u8>, id: &str) -> Result<Job, Error> {
+    if encoded.is_empty() {
+        Err(Error::NotFound(id.to_string()))
+    } else {
+        bincode::deserialize(&encoded).map_err(|_| Error::DecodingFailed)
+    }
+}
+
+async fn multi_get(
+    mut conn: Connection,
+    job_ids: Vec<String>,
+    name: &str,
+) -> Result<Vec<Vec<u8>>, Error> {
+    match job_ids.as_slice() {
+        [] => Err(Error::NotFound(name.to_string())),
+        [id] => {
+            let encoded_job: Vec<u8> = conn.get(id).await.map_err(Error::UnableToRead)?;
+            Ok(vec![encoded_job])
+        }
+        _ => Ok(conn.get(job_ids).await?),
+    }
 }
