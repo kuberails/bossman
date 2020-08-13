@@ -1,5 +1,4 @@
 use crate::bossman::Job;
-use redis::aio::Connection;
 use redis::AsyncCommands;
 use thiserror::Error;
 
@@ -58,7 +57,14 @@ pub async fn get_jobs_by_name(name: &str) -> Result<Vec<Job>, Error> {
 
     let job_ids: Vec<String> = conn.smembers(name).await?;
 
-    let encoded_jobs: Vec<Vec<u8>> = multi_get(conn, job_ids, name).await?;
+    let encoded_jobs: Vec<Vec<u8>> = match job_ids.as_slice() {
+        [] => Err(Error::UnableToFindJobList(name.to_string()))?,
+        [id] => {
+            let encoded_job: Vec<u8> = conn.get(id).await.map_err(Error::UnableToRead)?;
+            vec![encoded_job]
+        }
+        _ => conn.get(job_ids).await?,
+    };
 
     Ok(encoded_jobs
         .into_iter()
@@ -81,20 +87,5 @@ fn deserialize_job(encoded: Vec<u8>, id: &str) -> Result<Job, Error> {
         Err(Error::UnableToFindJob(id.to_string()))
     } else {
         bincode::deserialize(&encoded).map_err(|_| Error::DecodingFailed)
-    }
-}
-
-async fn multi_get(
-    mut conn: Connection,
-    job_ids: Vec<String>,
-    name: &str,
-) -> Result<Vec<Vec<u8>>, Error> {
-    match job_ids.as_slice() {
-        [] => Err(Error::UnableToFindJobList(name.to_string())),
-        [id] => {
-            let encoded_job: Vec<u8> = conn.get(id).await.map_err(Error::UnableToRead)?;
-            Ok(vec![encoded_job])
-        }
-        _ => Ok(conn.get(job_ids).await?),
     }
 }
