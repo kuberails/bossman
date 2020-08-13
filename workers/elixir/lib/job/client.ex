@@ -30,6 +30,13 @@ defmodule Bossman.Job.Client do
     end)
   end
 
+  def get_list(name) do
+    connect_and_do(fn channel ->
+      request = Bossman.Protobuf.V1alpha1.Job.GetListRequest.new(name: name)
+      Bossman.Protobuf.V1alpha1.JobService.Stub.get_list(channel, request)
+    end)
+  end
+
   defp connect_and_do(func_block) do
     with {:connect, {:ok, channel}} <- {:connect, GRPC.Stub.connect("localhost:50051")},
          {:reply, {:ok, reply}} <- {:reply, func_block.(channel)} do

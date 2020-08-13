@@ -1,6 +1,8 @@
 {
   "elixirLS.projectDir": "workers/elixir",
   "cSpell.words": [
-    "bossman"
+    "bossman",
+    "sadd",
+    "smembers"
   ]
 }

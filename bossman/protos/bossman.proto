@@ -49,5 +49,5 @@ service JobService {
   rpc Get(Job.GetRequest) returns (Job.GetResponse) {}
 
   rpc GetStatus(Job.GetRequest) returns (Job.GetStatusResponse) {}
-  // rpc GetList(Job.GetListRequest) returns (Job.GetListResponse) {}
+  rpc GetList(Job.GetListRequest) returns (Job.GetListResponse) {}
 }

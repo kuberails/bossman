@@ -1,5 +1,6 @@
 defmodule Bossman.Job do
   alias Bossman.Job.{Client, Options, Decode}
+  alias Bossman.Util.Result
   use TypedStruct
 
   typedstruct do
@@ -32,6 +33,17 @@ defmodule Bossman.Job do
     with {:ok, reply} <- Client.get(id),
          {:ok, job} <- Decode.decode(reply.job) do
       {:ok, job}
+    else
+      error -> error
+    end
+  end
+
+  @spec get_list(String.t()) :: {:ok, [Job.t()]} | {:error, any}
+  def get_list(job_name) do
+    with {:ok, reply} <- Client.get_list(job_name),
+         jobs <- Enum.map(reply.jobs, &Decode.decode/1),
+         {:ok, jobs} <- Result.filter_map(jobs) do
+      {:ok, jobs}
     else
       error -> error
     end

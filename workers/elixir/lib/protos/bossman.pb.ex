@@ -131,6 +131,10 @@ defmodule Bossman.Protobuf.V1alpha1.JobService.Service do
   rpc :GetStatus,
       Bossman.Protobuf.V1alpha1.Job.GetRequest,
       Bossman.Protobuf.V1alpha1.Job.GetStatusResponse
+
+  rpc :GetList,
+      Bossman.Protobuf.V1alpha1.Job.GetListRequest,
+      Bossman.Protobuf.V1alpha1.Job.GetListResponse
 end
 
 defmodule Bossman.Protobuf.V1alpha1.JobService.Stub do
