@@ -1,4 +1,5 @@
 use crate::bossman::Job;
+use redis::aio::Connection;
 use redis::AsyncCommands;
 use thiserror::Error;
 
@@ -19,7 +20,7 @@ pub enum Error {
     #[error("unable to read: {0}")]
     UnableToRead(redis::RedisError),
 
-    #[error("redis error: {0}")]
+    #[error("unmatched redis error: {0}")]
     OtherRedisError(#[from] redis::RedisError),
 
     #[error("unable to find job for: {0}")]
@@ -54,7 +55,6 @@ pub async fn get_jobs_by_name(name: &str) -> Result<Vec<Job>, Error> {
 
     let job_ids: Vec<String> = conn.smembers(name).await?;
 
-
     let encoded_jobs: Vec<Vec<u8>> = multi_get(conn, job_ids, name).await?;
 
     Ok(encoded_jobs
@@ -82,17 +82,13 @@ fn deserialize_job(encoded: Vec<u8>, id: &str) -> Result<Job, Error> {
 }
 
 async fn multi_get(
-    mut conn: redis::aio::Connection,
+    mut conn: Connection,
     job_ids: Vec<String>,
     name: &str,
 ) -> Result<Vec<Vec<u8>>, Error> {
-    match job_ids.len() {
-        0 => Err(Error::NotFound(name.to_string())),
-        1 => {
-            let id = job_ids
-                .first()
-                .expect("we already know theres atleast one element");
-
+    match job_ids.as_slice() {
+        [] => Err(Error::NotFound(name.to_string())),
+        [id] => {
             let encoded_job: Vec<u8> = conn.get(id).await.map_err(Error::UnableToRead)?;
             Ok(vec![encoded_job])
         }
