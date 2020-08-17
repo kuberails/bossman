@@ -1,5 +1,6 @@
 defmodule Bossman.Job.Client do
   alias Bossman.Protobuf.V1alpha1.Options
+  alias Bossman.Job.Error
   use GRPC.Server, service: Bossman.Protobuf.V1alpha1.JobService.Service
 
   @spec perform(%{value: String.t()}, %{value: String.t()}, Options.t()) :: {:ok, any}
@@ -43,8 +44,11 @@ defmodule Bossman.Job.Client do
       Task.start(fn -> GRPC.Stub.disconnect(channel) end)
       {:ok, reply}
     else
-      {:reply, {:error, %GRPC.RPCError{message: message}}} -> {:error, URI.decode(message)}
-      error -> error
+      {:reply, {:error, e = %GRPC.RPCError{}}} ->
+        {:error, Error.new(e)}
+
+      error ->
+        error
     end
   end
 end
