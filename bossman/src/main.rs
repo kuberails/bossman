@@ -76,7 +76,7 @@ impl JobService for JobServer {
             .await
             .map_err(Error::DbError)?;
 
-        let reply = GetListResponse { jobs: jobs };
+        let reply = GetListResponse { jobs };
 
         Ok(Response::new(reply))
     }
@@ -87,7 +87,7 @@ impl JobService for JobServer {
             .map_err(Error::DbError)?
             .status;
 
-        let reply = GetStatusResponse { status: status };
+        let reply = GetStatusResponse { status };
 
         Ok(Response::new(reply))
     }

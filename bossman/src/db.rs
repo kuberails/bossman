@@ -74,7 +74,7 @@ mod internal {
         let job_ids: Vec<String> = conn.smembers(name).await?;
 
         match job_ids.as_slice() {
-            [] => Err(Error::UnableToFindJobList(name.to_string()))?,
+            [] => Err(Error::UnableToFindJobList(name.to_string())),
             [id] => {
                 let job = get_job(conn, id).await?;
                 Ok(vec![job])
