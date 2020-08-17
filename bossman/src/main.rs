@@ -32,7 +32,11 @@ impl From<Error> for Status {
     fn from(error: Error) -> Self {
         match error {
             e @ Error::RequiredRequestFieldMissing(_) => Status::invalid_argument(e.to_string()),
-            Error::DbError(e) => Status::invalid_argument(e.to_string()),
+            e @ Error::DbError(db::Error::UnableToFindJob(_)) => Status::not_found(e.to_string()),
+            e @ Error::DbError(db::Error::UnableToFindJobList(_)) => {
+                Status::not_found(e.to_string())
+            }
+            e => Status::unknown(e.to_string()),
         }
     }
 }
