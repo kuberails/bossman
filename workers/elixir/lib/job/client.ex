@@ -1,7 +1,6 @@
 defmodule Bossman.Job.Client do
   alias Bossman.Protobuf.V1alpha1.Options
   alias Bossman.Job.Error
-  use GRPC.Server, service: Bossman.Protobuf.V1alpha1.JobService.Service
 
   @spec perform(%{value: String.t()}, %{value: String.t()}, Options.t()) :: {:ok, any}
   def perform(name, docker_image_name, options) do
