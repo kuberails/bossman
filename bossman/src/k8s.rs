@@ -11,6 +11,7 @@ use kube::{
     api::{Api, PostParams},
     Client,
 };
+use std::collections::BTreeMap;
 
 pub async fn get_job(job: &BossmanJob) -> Result<KubeJob, kube::Error> {
     let client = Client::try_default().await?;
@@ -41,6 +42,11 @@ pub async fn create_job(job: &BossmanJob) -> Result<KubeJob, kube::Error> {
     };
 
     let jobs: Api<KubeJob> = Api::namespaced(client, &namespace);
+
+    let labels: BTreeMap<String, String> = vec![("id", &job.id), ("name", &job.name)]
+        .into_iter()
+        .map(|(key, value)| (key.to_string(), value.to_string()))
+        .collect();
 
     let job_spec = JobSpec {
         backoff_limit: job_options.retries,
@@ -76,6 +82,7 @@ pub async fn create_job(job: &BossmanJob) -> Result<KubeJob, kube::Error> {
         metadata: ObjectMeta {
             name: Some(job_name(&job)),
             annotations: Some(job_options.annotations.into_iter().collect()),
+            labels: Some(labels),
             namespace: Some(namespace),
             ..ObjectMeta::default()
         },
@@ -154,5 +161,5 @@ fn convert_to_kube_env_froms(envs: Vec<EnvFrom>) -> Vec<EnvFromSource> {
 }
 
 fn job_name(job: &BossmanJob) -> String {
-    format!("{}-{}", job.name, &job.id[..8])
+    format!("{}-{}", job.name, &job.id[..13])
 }
