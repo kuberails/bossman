@@ -1,8 +1,16 @@
 {
   "elixirLS.projectDir": "workers/elixir",
   "cSpell.words": [
+    "backoff",
+    "backoff limit",
     "bossman",
+    "convert",
+    "env",
+    "froms",
+    "kube",
+    "limit",
     "sadd",
-    "smembers"
+    "smembers",
+    "to"
   ]
 }
