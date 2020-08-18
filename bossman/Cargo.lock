@@ -429,9 +429,9 @@ checksum = "134951f4028bdadb9b84baf4232681efbf277da25144b9b0ad65df75946c422b"
 
 [[package]]
 name = "either"
-version = "1.5.3"
+version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb1f6b1ce1c140482ea30ddd3335fc0024ac7ee112895426e0a629a6c20adfe3"
+checksum = "cd56b59865bce947ac5958779cfa508f6c3b9497cc762b7e24a12d11ccde2c4f"
 
 [[package]]
 name = "encoding_rs"
@@ -829,9 +829,9 @@ dependencies = [
 
 [[package]]
 name = "kube"
-version = "0.39.0"
+version = "0.40.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "756d6f58e5d45db5defa2632590d411d41640bc735986813fe682bd88e3abe68"
+checksum = "be34ed86dca3021a649b574a1628917d694bb75650a3b50c492e1786589a5ac6"
 dependencies = [
  "Inflector",
  "base64 0.12.3",
@@ -859,9 +859,9 @@ dependencies = [
 
 [[package]]
 name = "kube-runtime"
-version = "0.39.0"
+version = "0.40.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "334eb0a1e31f2c8e6b5c72a0b04ff2d633c3e15931946b6b0dcc4954c4705964"
+checksum = "6292e1359c338da559c201a7be496c70f328eaa4d39d312356a39a579d7f1f29"
 dependencies = [
  "dashmap",
  "derivative",
