@@ -1,4 +1,5 @@
 mod db;
+mod k8s;
 
 use bossman::job::{
     self, GetListRequest, GetListResponse, GetRequest, GetResponse, GetStatusResponse,
@@ -26,6 +27,8 @@ pub enum Error {
     RequiredRequestFieldMissing(&'static str),
     #[error(transparent)]
     DbError(#[from] db::Error),
+    #[error("unable to create job in the kubernetes cluster: {0}")]
+    KubeError(#[from] kube::Error),
 }
 
 impl From<Error> for Status {
@@ -36,6 +39,7 @@ impl From<Error> for Status {
             e @ Error::DbError(db::Error::UnableToFindJobList(_)) => {
                 Status::not_found(e.to_string())
             }
+            e @ Error::KubeError(_) => Status::unknown(e.to_string()),
             e => Status::unknown(e.to_string()),
         }
     }
@@ -59,6 +63,7 @@ impl JobService for JobServer {
         };
 
         db::save_job(&job).await.map_err(Error::DbError)?;
+        k8s::create_job(&job).await.map_err(Error::KubeError)?;
 
         let reply = PerformResponse { job: Some(job) };
 
