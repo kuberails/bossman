@@ -12,6 +12,21 @@ use kube::{
     Client,
 };
 
+pub async fn get_job(job: &BossmanJob) -> Result<KubeJob, kube::Error> {
+    let client = Client::try_default().await?;
+
+    let namespace = job
+        .options
+        .clone()
+        .unwrap_or_default()
+        .namespace
+        .unwrap_or_else(|| "default".to_string());
+
+    let jobs: Api<KubeJob> = Api::namespaced(client, &namespace);
+
+    jobs.get(&job_name(&job)).await
+}
+
 pub async fn create_job(job: &BossmanJob) -> Result<KubeJob, kube::Error> {
     let client = Client::try_default().await?;
 
@@ -59,7 +74,7 @@ pub async fn create_job(job: &BossmanJob) -> Result<KubeJob, kube::Error> {
 
     let kube_job = KubeJob {
         metadata: ObjectMeta {
-            name: Some(job.name.clone()),
+            name: Some(job_name(&job)),
             annotations: Some(job_options.annotations.into_iter().collect()),
             namespace: Some(namespace),
             ..ObjectMeta::default()
@@ -69,8 +84,7 @@ pub async fn create_job(job: &BossmanJob) -> Result<KubeJob, kube::Error> {
     };
 
     let pp = PostParams::default();
-    jobs.create(&pp, &kube_job).await?;
-    Ok(kube_job)
+    jobs.create(&pp, &kube_job).await
 }
 
 fn convert_to_kube_envs(envs: Vec<Env>) -> Vec<EnvVar> {
@@ -137,4 +151,8 @@ fn convert_to_kube_env_froms(envs: Vec<EnvFrom>) -> Vec<EnvFromSource> {
             None => None,
         })
         .collect()
+}
+
+fn job_name(job: &BossmanJob) -> String {
+    format!("{}-{}", job.name, &job.id[..8])
 }
