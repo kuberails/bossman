@@ -1,6 +1,5 @@
 use crate::bossman::options::{env, env_from};
 use crate::bossman::options::{Env, EnvFrom};
-use crate::bossman::Options;
 use crate::Job as BossmanJob;
 use k8s_openapi::api::batch::v1::{Job as KubeJob, JobSpec};
 use k8s_openapi::api::core::v1::{
@@ -27,7 +26,6 @@ pub async fn create_job(job: &BossmanJob) -> Result<KubeJob, kube::Error> {
     };
 
     let jobs: Api<KubeJob> = Api::namespaced(client, &namespace);
-    let options = Options::default();
 
     let job_spec = JobSpec {
         backoff_limit: job_options.retries,
@@ -37,7 +35,10 @@ pub async fn create_job(job: &BossmanJob) -> Result<KubeJob, kube::Error> {
             metadata: None,
             spec: Some(PodSpec {
                 image_pull_secrets,
+                restart_policy: Some("OnFailure".to_string()),
                 containers: vec![Container {
+                    image: Some(job.docker_image_name.clone()),
+                    name: job.name.clone(),
                     args: job.options.as_ref().map(|options| options.args.clone()),
                     command: job.options.as_ref().map(|options| options.command.clone()),
                     env: job
@@ -66,9 +67,6 @@ pub async fn create_job(job: &BossmanJob) -> Result<KubeJob, kube::Error> {
         spec: Some(job_spec),
         ..KubeJob::default()
     };
-
-    println!("KJ: {:#?}", kube_job);
-    println!("Options: {:#?}", options);
 
     let pp = PostParams::default();
     jobs.create(&pp, &kube_job).await?;
