@@ -3,7 +3,7 @@
 pub struct Options {
     /// optional
     #[prost(message, optional, tag="1")]
-    pub timeout: ::std::option::Option<i32>,
+    pub timeout: ::std::option::Option<i64>,
     /// optional
     #[prost(message, optional, tag="3")]
     pub image_pull_secrets: ::std::option::Option<::std::string::String>,

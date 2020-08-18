@@ -5,7 +5,7 @@ package bossman.protobuf.v1alpha1;
 import "google/protobuf/wrappers.proto";
 
 message Options {
-  google.protobuf.Int32Value timeout = 1;             // optional
+  google.protobuf.Int64Value timeout = 1;             // optional
   google.protobuf.StringValue image_pull_secrets = 3; // optional
   map<string, string> annotations = 4;                // optional
   google.protobuf.StringValue namespace = 5;          // default=default
