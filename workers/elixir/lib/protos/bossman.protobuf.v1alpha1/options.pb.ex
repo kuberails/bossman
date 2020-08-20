@@ -133,7 +133,7 @@ defmodule Bossman.Protobuf.V1alpha1.Options do
   use Protobuf, syntax: :proto3
 
   @type t :: %__MODULE__{
-          timeout: Google.Protobuf.Int32Value.t() | nil,
+          timeout: Google.Protobuf.Int64Value.t() | nil,
           image_pull_secrets: Google.Protobuf.StringValue.t() | nil,
           annotations: %{String.t() => String.t()},
           namespace: Google.Protobuf.StringValue.t() | nil,
@@ -159,7 +159,7 @@ defmodule Bossman.Protobuf.V1alpha1.Options do
     :env_from
   ]
 
-  field :timeout, 1, type: Google.Protobuf.Int32Value
+  field :timeout, 1, type: Google.Protobuf.Int64Value
   field :image_pull_secrets, 3, type: Google.Protobuf.StringValue
 
   field :annotations, 4,

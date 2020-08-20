@@ -1,4 +1,7 @@
+mod bossman;
 mod db;
+mod error;
+mod k8s;
 
 use bossman::job::{
     self, GetListRequest, GetListResponse, GetRequest, GetResponse, GetStatusResponse,
@@ -16,16 +19,16 @@ type TonicResponse<T> = Result<Response<T>, Status>;
 #[derive(Debug, Default)]
 pub struct JobServer {}
 
-pub mod bossman {
-    tonic::include_proto!("bossman.protobuf.v1alpha1");
-}
-
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("missing the required field in your request: {0})")]
     RequiredRequestFieldMissing(&'static str),
     #[error(transparent)]
     DbError(#[from] db::Error),
+    #[error("unable to create job in the kubernetes cluster: {0}")]
+    KubeCreateError(kube::Error),
+    #[error("unable to get job from the kubernetes cluster: {0}")]
+    KubeGetError(kube::Error),
 }
 
 impl From<Error> for Status {
@@ -36,6 +39,8 @@ impl From<Error> for Status {
             e @ Error::DbError(db::Error::UnableToFindJobList(_)) => {
                 Status::not_found(e.to_string())
             }
+            e @ Error::KubeCreateError(_) => Status::unknown(e.to_string()),
+            e @ Error::KubeGetError(_) => Status::unknown(e.to_string()),
             e => Status::unknown(e.to_string()),
         }
     }
@@ -59,6 +64,9 @@ impl JobService for JobServer {
         };
 
         db::save_job(&job).await.map_err(Error::DbError)?;
+        k8s::create_job(&job)
+            .await
+            .map_err(Error::KubeCreateError)?;
 
         let reply = PerformResponse { job: Some(job) };
 
@@ -70,7 +78,11 @@ impl JobService for JobServer {
             .await
             .map_err(Error::DbError)?;
 
+        let kube_job = k8s::get_job(&job).await.map_err(Error::KubeGetError)?;
+
         let reply = GetResponse { job: Some(job) };
+
+        println!("JOB: {:#?}", kube_job);
 
         Ok(Response::new(reply))
     }
