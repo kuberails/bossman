@@ -1,4 +1,5 @@
 mod bossman;
+mod consts;
 mod db;
 mod error;
 mod k8s;
