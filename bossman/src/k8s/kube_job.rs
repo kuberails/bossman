@@ -4,7 +4,7 @@ use crate::bossman::Job;
 use k8s_openapi::api::batch::v1::{Job as KubeJob, JobSpec};
 use k8s_openapi::apimachinery::pkg::apis::meta::v1::ObjectMeta;
 use std::collections::BTreeMap;
-use std::convert::From;
+use std::convert::{From, TryFrom};
 
 use k8s_openapi::api::core::v1::{
     ConfigMapEnvSource, ConfigMapKeySelector, Container, EnvFromSource, EnvVar, EnvVarSource,
@@ -75,8 +75,24 @@ impl From<&Job> for KubeJob {
 
 fn convert_to_kube_envs(envs: Vec<Env>) -> Vec<EnvVar> {
     envs.into_iter()
-        .filter_map(|env| match env.env {
-            Some(env::Env::Value(value)) => Some(EnvVar {
+        .map(TryFrom::try_from)
+        .filter_map(Result::ok)
+        .collect()
+}
+
+fn convert_to_kube_env_froms(envs: Vec<EnvFrom>) -> Vec<EnvFromSource> {
+    envs.into_iter()
+        .map(TryFrom::try_from)
+        .filter_map(Result::ok)
+        .collect()
+}
+
+impl TryFrom<Env> for EnvVar {
+    type Error = &'static str;
+
+    fn try_from(env: Env) -> Result<EnvVar, Self::Error> {
+        match env.env {
+            Some(env::Env::Value(value)) => Ok(EnvVar {
                 name: value.name,
                 value: Some(value.value),
                 value_from: None,
@@ -106,35 +122,37 @@ fn convert_to_kube_envs(envs: Vec<Env>) -> Vec<EnvVar> {
                     None => None,
                 };
 
-                Some(EnvVar {
+                Ok(EnvVar {
                     name: value.name,
                     value_from,
                     value: None,
                 })
             }
-            None => None,
-        })
-        .collect()
+            None => Err("env.env not present"),
+        }
+    }
 }
 
-fn convert_to_kube_env_froms(envs: Vec<EnvFrom>) -> Vec<EnvFromSource> {
-    envs.into_iter()
-        .filter_map(|env| match env.env_from {
-            Some(env_from::EnvFrom::ConfigMapKeyRef(config_map)) => Some(EnvFromSource {
+impl TryFrom<EnvFrom> for EnvFromSource {
+    type Error = &'static str;
+
+    fn try_from(env: EnvFrom) -> Result<EnvFromSource, Self::Error> {
+        match env.env_from {
+            Some(env_from::EnvFrom::ConfigMapKeyRef(config_map)) => Ok(EnvFromSource {
                 config_map_ref: Some(ConfigMapEnvSource {
                     name: Some(config_map.name.clone()),
                     optional: None,
                 }),
                 ..EnvFromSource::default()
             }),
-            Some(env_from::EnvFrom::SecretKeyRef(secret_key)) => Some(EnvFromSource {
+            Some(env_from::EnvFrom::SecretKeyRef(secret_key)) => Ok(EnvFromSource {
                 secret_ref: Some(SecretEnvSource {
                     name: Some(secret_key.name.clone()),
                     optional: None,
                 }),
                 ..EnvFromSource::default()
             }),
-            None => None,
-        })
-        .collect()
+            None => Err("env.env_from not present"),
+        }
+    }
 }
