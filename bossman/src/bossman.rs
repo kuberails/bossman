@@ -1,10 +1,13 @@
+tonic::include_proto!("bossman.protobuf.v1alpha1");
+
 use crate::error::{CollectionExt, OptionExt};
 use k8s_openapi::api::batch::v1::Job as KubeJob;
+use k8s_openapi::api::core::v1::{
+    ConfigMapKeySelector, EnvFromSource, EnvVar, EnvVarSource, SecretKeySelector,
+};
 use std::collections::{BTreeMap, HashMap};
 use std::convert::TryFrom;
 use thiserror::Error;
-
-tonic::include_proto!("bossman.protobuf.v1alpha1");
 
 impl Job {
     pub fn get_namespace(&self) -> &str {
@@ -86,6 +89,66 @@ impl<T> OptionExt<T, FromError> for Option<T> {
 impl CollectionExt<String, FromError> for BTreeMap<String, String> {
     fn get_or_err(&self, field: &'static str, ctx: &'static str) -> Result<String, FromError> {
         self.get(field).ctx(ctx).map(String::from)
+    }
+}
+
+impl TryFrom<EnvVar> for options::Env {
+    type Error = FromError;
+
+    fn try_from(env_var: EnvVar) -> Result<options::Env, Self::Error> {
+        match env_var {
+            EnvVar {
+                name,
+                value: Some(value),
+                value_from: None,
+            } => Ok(options::Env {
+                env: Some(options::env::Env::Value({
+                    options::env::EnvValue { name, value: value }
+                })),
+            }),
+
+            EnvVar {
+                name,
+                value: None,
+                value_from:
+                    Some(EnvVarSource {
+                        secret_key_ref: Some(secret_key @ SecretKeySelector { .. }),
+                        ..
+                    }),
+            } => Ok(options::Env {
+                env: Some(options::env::Env::ValueFrom(options::env::EnvFrom {
+                    name,
+                    value_from: Some(options::env::env_from::ValueFrom::SecretKeyRef(
+                        options::env::SecretKeyRef {
+                            key: secret_key.key.clone(),
+                            name: secret_key.name.ctx("secret_key_ref.name")?,
+                        },
+                    )),
+                })),
+            }),
+
+            EnvVar {
+                name,
+                value: None,
+                value_from:
+                    Some(EnvVarSource {
+                        config_map_key_ref: Some(config_map @ ConfigMapKeySelector { .. }),
+                        ..
+                    }),
+            } => Ok(options::Env {
+                env: Some(options::env::Env::ValueFrom(options::env::EnvFrom {
+                    name,
+                    value_from: Some(options::env::env_from::ValueFrom::ConfigMapKeyRef(
+                        options::env::ConfigMapKeyRef {
+                            key: config_map.key.clone(),
+                            name: config_map.name.ctx("secret_key_ref.name")?,
+                        },
+                    )),
+                })),
+            }),
+
+            _ => Err(FromError::FieldNotPresent("env")),
+        }
     }
 }
 

@@ -1,5 +1,4 @@
-use crate::bossman::options::{env, env_from};
-use crate::bossman::options::{Env, EnvFrom};
+use crate::bossman::options::{env, env_from, Env, EnvFrom};
 use crate::bossman::Job;
 use k8s_openapi::api::batch::v1::{Job as KubeJob, JobSpec};
 use k8s_openapi::apimachinery::pkg::apis::meta::v1::ObjectMeta;
