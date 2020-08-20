@@ -3,7 +3,8 @@ tonic::include_proto!("bossman.protobuf.v1alpha1");
 use crate::error::{CollectionExt, OptionExt};
 use k8s_openapi::api::batch::v1::Job as KubeJob;
 use k8s_openapi::api::core::v1::{
-    ConfigMapKeySelector, EnvFromSource, EnvVar, EnvVarSource, SecretKeySelector,
+    ConfigMapEnvSource, ConfigMapKeySelector, EnvFromSource, EnvVar, EnvVarSource, SecretEnvSource,
+    SecretKeySelector,
 };
 use std::collections::{BTreeMap, HashMap};
 use std::convert::TryFrom;
@@ -148,6 +149,38 @@ impl TryFrom<EnvVar> for options::Env {
             }),
 
             _ => Err(FromError::FieldNotPresent("env")),
+        }
+    }
+}
+
+impl TryFrom<EnvFromSource> for options::EnvFrom {
+    type Error = FromError;
+
+    fn try_from(env_from_source: EnvFromSource) -> Result<options::EnvFrom, Self::Error> {
+        match env_from_source {
+            EnvFromSource {
+                config_map_ref: Some(config_map_ref @ ConfigMapEnvSource { .. }),
+                ..
+            } => Ok(options::EnvFrom {
+                env_from: Some(options::env_from::EnvFrom::ConfigMapKeyRef(
+                    options::env_from::ConfigMapKeyRef {
+                        name: config_map_ref.name.ctx("config_map_key_ref.name")?,
+                    },
+                )),
+            }),
+            EnvFromSource {
+                secret_ref: Some(secret_ref @ SecretEnvSource { .. }),
+                ..
+            } => Ok(options::EnvFrom {
+                env_from: Some(options::env_from::EnvFrom::SecretKeyRef(
+                    options::env_from::SecretKeyRef {
+                        name: secret_ref.name.ctx("config_map_key_ref.name")?,
+                    },
+                )),
+            }),
+            _ => Err(FromError::FieldNotPresent(
+                "secret_key_ref and config_map_key_ref not present",
+            )),
         }
     }
 }
