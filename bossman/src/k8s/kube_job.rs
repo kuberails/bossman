@@ -1,6 +1,6 @@
 use crate::bossman::options::{env, env_from};
 use crate::bossman::options::{Env, EnvFrom};
-use crate::bossman::Job as BossmanJob;
+use crate::bossman::Job;
 use k8s_openapi::api::batch::v1::{Job as KubeJob, JobSpec};
 use k8s_openapi::apimachinery::pkg::apis::meta::v1::ObjectMeta;
 use std::collections::BTreeMap;
@@ -11,8 +11,8 @@ use k8s_openapi::api::core::v1::{
     LocalObjectReference, PodSpec, PodTemplateSpec, SecretEnvSource, SecretKeySelector,
 };
 
-impl From<&BossmanJob> for KubeJob {
-    fn from(job: &BossmanJob) -> Self {
+impl From<&Job> for KubeJob {
+    fn from(job: &Job) -> Self {
         let job_options = job.options.clone().unwrap_or_default();
         let namespace = job_options
             .namespace
@@ -31,6 +31,7 @@ impl From<&BossmanJob> for KubeJob {
         let job_spec = JobSpec {
             backoff_limit: job_options.retries,
             parallelism: job_options.parallelism,
+            completions: job_options.completions,
             active_deadline_seconds: job_options.timeout,
             template: PodTemplateSpec {
                 metadata: None,

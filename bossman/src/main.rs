@@ -1,5 +1,6 @@
 mod bossman;
 mod db;
+mod error;
 mod k8s;
 
 use bossman::job::{
