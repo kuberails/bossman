@@ -17,7 +17,7 @@ pub async fn get_job(job: &BossmanJob) -> Result<KubeJob, kube::Error> {
 }
 
 pub async fn create_job(job: &BossmanJob) -> Result<KubeJob, kube::Error> {
-    let kube_job: KubeJob = job.into();
+    let kube_job = KubeJob::from(job);
     let namespace = &kube_job.metadata.namespace.as_ref().unwrap();
 
     let client = Client::try_default().await?;
