@@ -73,7 +73,9 @@ impl TryFrom<&KubeJob> for Job {
                 env: Vec::new(),
                 env_from: Vec::new(),
             }),
-            status: 0,
+            status: Some(job::Status {
+                status: Some(job::status::Status::Waiting(job::status::Waiting {})),
+            }),
         })
     }
 }

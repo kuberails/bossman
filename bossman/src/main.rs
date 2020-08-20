@@ -5,7 +5,7 @@ mod error;
 mod k8s;
 
 use bossman::job::{
-    self, GetListRequest, GetListResponse, GetRequest, GetResponse, GetStatusResponse,
+    self, status, GetListRequest, GetListResponse, GetRequest, GetResponse, GetStatusResponse,
     PerformRequest, PerformResponse,
 };
 use bossman::job_service_server::{JobService, JobServiceServer};
@@ -60,7 +60,9 @@ impl JobService for JobServer {
             name: request
                 .name
                 .ok_or(Error::RequiredRequestFieldMissing("name"))?,
-            status: job::Status::Waiting.into(),
+            status: Some(job::Status {
+                status: Some(status::Status::Waiting(status::Waiting {})),
+            }),
             options: request.options,
         };
 
