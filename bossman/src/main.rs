@@ -1,3 +1,4 @@
+mod bossman;
 mod db;
 mod k8s;
 
@@ -16,10 +17,6 @@ type TonicResponse<T> = Result<Response<T>, Status>;
 
 #[derive(Debug, Default)]
 pub struct JobServer {}
-
-pub mod bossman {
-    tonic::include_proto!("bossman.protobuf.v1alpha1");
-}
 
 #[derive(Debug, Error)]
 pub enum Error {
