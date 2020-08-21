@@ -80,7 +80,7 @@ impl TryFrom<&KubeJob> for Job {
             status: Some(get_status(
                 &kube_job,
                 spec.completions.unwrap_or(1),
-                spec.backoff_limit.unwrap_or(1),
+                spec.backoff_limit.unwrap_or(6),
             )),
         })
     }
