@@ -1,4 +1,5 @@
 defmodule Bossman.Job.Status do
+  alias Bossman.Protobuf.V1alpha1, as: BossmanProtobuf
   use TypedStruct
 
   defmodule Error do
@@ -27,8 +28,7 @@ defmodule Bossman.Job.Status do
     end
   end
 
-  @spec decode(Bossman.Protobuf.V1alpha1.Job.Status.t()) ::
-          {:ok, Status.t()} | {:error, String.t()}
+  @spec decode(BossmanProtobuf.Status.t()) :: {:ok, Status.t()} | {:error, String.t()}
   def decode(status) do
     try do
       {:ok, decode!(status)}
@@ -38,7 +38,7 @@ defmodule Bossman.Job.Status do
     end
   end
 
-  @spec decode!(Bossman.Protobuf.V1alpha1.Job.Status.t()) :: Status.t()
+  @spec decode!(BossmanProtobuf.Job.Status.t()) :: Status.t()
   def decode!(%_{status: {:waiting, _waiting}}), do: :waiting
   def decode!(%_{status: {:active, active}}), do: %Active{started_at: active.started_at}
 

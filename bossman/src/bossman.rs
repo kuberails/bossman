@@ -1,13 +1,14 @@
 tonic::include_proto!("bossman.protobuf.v1alpha1");
 
 use crate::error::{CollectionExt, OptionExt};
-use k8s_openapi::api::batch::v1::Job as KubeJob;
+use chrono::offset::Utc;
+use k8s_openapi::api::batch::v1::{Job as KubeJob, JobStatus};
 use k8s_openapi::api::core::v1::{
     ConfigMapEnvSource, ConfigMapKeySelector, EnvFromSource, EnvVar, EnvVarSource, SecretEnvSource,
     SecretKeySelector,
 };
 use std::collections::{BTreeMap, HashMap};
-use std::convert::TryFrom;
+use std::convert::{From, TryFrom};
 use thiserror::Error;
 
 impl Job {
@@ -73,9 +74,11 @@ impl TryFrom<&KubeJob> for Job {
                 env: Vec::new(),
                 env_from: Vec::new(),
             }),
-            status: Some(job::Status {
-                status: Some(job::status::Status::Waiting(job::status::Waiting {})),
-            }),
+            status: Some(get_status(
+                &kube_job,
+                spec.completions.unwrap_or(1),
+                spec.backoff_limit.unwrap_or(1),
+            )),
         })
     }
 }
@@ -184,6 +187,80 @@ impl TryFrom<EnvFromSource> for options::EnvFrom {
                 "secret_key_ref and config_map_key_ref not present",
             )),
         }
+    }
+}
+
+fn get_status(kube_job: &KubeJob, completions: i32, retries: i32) -> job::Status {
+    match kube_job.status.as_ref() {
+        Some(JobStatus {
+            active: Some(n),
+            start_time,
+            ..
+        }) if n >= &1 => job::Status {
+            status: Some(job::status::Status::Active(job::status::Active {
+                started_at: start_time
+                    .as_ref()
+                    .map(|inner| inner.0)
+                    .unwrap_or_else(|| Utc::now())
+                    .to_string(),
+            })),
+        },
+
+        Some(JobStatus {
+            succeeded: Some(n),
+            start_time,
+            completion_time,
+            ..
+        }) if n >= &completions => job::Status {
+            status: Some(job::status::Status::Completed(job::status::Completed {
+                started_at: start_time
+                    .as_ref()
+                    .map(|inner| inner.0)
+                    .unwrap_or_else(|| Utc::now())
+                    .to_string(),
+                completed_at: completion_time
+                    .as_ref()
+                    .map(|inner| inner.0)
+                    .unwrap_or_else(|| Utc::now())
+                    .to_string(),
+            })),
+        },
+
+        Some(JobStatus {
+            failed: Some(n),
+            completion_time,
+            start_time,
+            ..
+        }) if n >= &retries => job::Status {
+            status: Some(job::status::Status::Failed(job::status::Failed {
+                started_at: start_time
+                    .as_ref()
+                    .map(|inner| inner.0)
+                    .unwrap_or_else(|| Utc::now())
+                    .to_string(),
+                failed_at: completion_time
+                    .as_ref()
+                    .map(|inner| inner.0)
+                    .unwrap_or_else(|| Utc::now())
+                    .to_string(),
+            })),
+        },
+
+        // if its not failed or succeeded its still active
+        Some(JobStatus { start_time, .. }) => job::Status {
+            status: Some(job::status::Status::Active(job::status::Active {
+                started_at: start_time
+                    .as_ref()
+                    .map(|inner| inner.0)
+                    .unwrap_or_else(|| Utc::now())
+                    .to_string(),
+            })),
+        },
+
+        // should not be possible
+        None => job::Status {
+            status: Some(job::status::Status::Waiting(job::status::Waiting {})),
+        },
     }
 }
 

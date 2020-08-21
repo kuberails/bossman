@@ -12,6 +12,7 @@ tokio = { version = "0.2", features = ["macros"] }
 
 # utils
 uuid = { version = "0.8", features = ["v4"] }
+chrono = "0.4"
 
 # error handling
 thiserror = "1.0"
