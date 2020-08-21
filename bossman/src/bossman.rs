@@ -1,5 +1,6 @@
 tonic::include_proto!("bossman.protobuf.v1alpha1");
 
+use crate::consts::{BOSSMAN_JOB_ID, BOSSMAN_JOB_NAME};
 use crate::error::{CollectionExt, OptionExt};
 use chrono::offset::Utc;
 use k8s_openapi::api::batch::v1::{Job as KubeJob, JobStatus};
@@ -37,8 +38,10 @@ impl TryFrom<&KubeJob> for Job {
         let container = &pod_spec.containers[0];
 
         Ok(Self {
-            id: labels.get_or_err("id", "labels.id")?,
-            name: labels.get_or_err("name", "labels.name")?.to_string(),
+            id: labels.get_or_err(BOSSMAN_JOB_ID, "labels.id")?,
+            name: labels
+                .get_or_err(BOSSMAN_JOB_NAME, "labels.name")?
+                .to_string(),
             docker_image_name: container
                 .image
                 .as_ref()
