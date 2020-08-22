@@ -14,11 +14,26 @@ message Job {
   Options options = 4;
   Status status = 5;
 
-  enum Status {
-    WAITING = 0;
-    PROCESSING = 1;
-    COMPLETE = 2;
-    ERROR = 3;
+  message Status {
+    oneof status {
+      Waiting waiting = 1;
+      Active active = 2;
+      Completed completed = 3;
+      Failed failed = 4;
+    }
+    message Waiting {}
+
+    message Active { string started_at = 1; }
+
+    message Completed {
+      string started_at = 1;
+      string completed_at = 2;
+    }
+
+    message Failed {
+      string started_at = 1;
+      string failed_at = 2;
+    }
   }
 
   // perform()

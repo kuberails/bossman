@@ -23,7 +23,7 @@ defmodule Bossman.Job.Options do
     field :image_pull_secrets, String.t()
     field :annotations, %{String.t() => String.t()}
 
-    field :retries, integer(), default: 5
+    field :retries, integer(), default: 6
     field :completions, integer(), default: 1
     field :parallelism, integer(), default: 1
 

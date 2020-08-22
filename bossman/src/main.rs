@@ -1,14 +1,17 @@
 mod bossman;
+mod consts;
 mod db;
 mod error;
 mod k8s;
 
 use bossman::job::{
-    self, GetListRequest, GetListResponse, GetRequest, GetResponse, GetStatusResponse,
+    self, status, GetListRequest, GetListResponse, GetRequest, GetResponse, GetStatusResponse,
     PerformRequest, PerformResponse,
 };
 use bossman::job_service_server::{JobService, JobServiceServer};
 use bossman::Job;
+use k8s_openapi::api::batch::v1::Job as KubeJob;
+use std::convert::TryFrom;
 use thiserror::Error;
 use uuid::Uuid;
 
@@ -29,6 +32,8 @@ pub enum Error {
     KubeCreateError(kube::Error),
     #[error("unable to get job from the kubernetes cluster: {0}")]
     KubeGetError(kube::Error),
+    #[error(transparent)]
+    KubeJobConversionError(bossman::FromError),
 }
 
 impl From<Error> for Status {
@@ -41,6 +46,7 @@ impl From<Error> for Status {
             }
             e @ Error::KubeCreateError(_) => Status::unknown(e.to_string()),
             e @ Error::KubeGetError(_) => Status::unknown(e.to_string()),
+            e @ Error::KubeJobConversionError(_) => Status::not_found(e.to_string()),
             e => Status::unknown(e.to_string()),
         }
     }
@@ -59,7 +65,9 @@ impl JobService for JobServer {
             name: request
                 .name
                 .ok_or(Error::RequiredRequestFieldMissing("name"))?,
-            status: job::Status::Waiting.into(),
+            status: Some(job::Status {
+                status: Some(status::Status::Waiting(status::Waiting {})),
+            }),
             options: request.options,
         };
 
@@ -78,11 +86,10 @@ impl JobService for JobServer {
             .await
             .map_err(Error::DbError)?;
 
-        let kube_job = k8s::get_job(&job).await.map_err(Error::KubeGetError)?;
+        let kube_job: KubeJob = k8s::get_job(&job).await.map_err(Error::KubeGetError)?;
 
+        let job = bossman::Job::try_from(&kube_job).map_err(Error::KubeJobConversionError)?;
         let reply = GetResponse { job: Some(job) };
-
-        println!("JOB: {:#?}", kube_job);
 
         Ok(Response::new(reply))
     }

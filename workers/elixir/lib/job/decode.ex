@@ -1,6 +1,6 @@
 defmodule Bossman.Job.Decode do
   alias Bossman.Job
-  alias Bossman.Job.Options
+  alias Bossman.Job.{Options, Status}
 
   defmodule Error do
     defexception [:message]
@@ -23,7 +23,7 @@ defmodule Bossman.Job.Decode do
       id: job.id,
       name: job.name,
       options: Options.decode!(job.options),
-      status: job.status
+      status: Status.decode!(job.status)
     }
   end
 end

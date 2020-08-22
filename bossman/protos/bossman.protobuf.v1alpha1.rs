@@ -134,10 +134,56 @@ pub struct Job {
     pub docker_image_name: std::string::String,
     #[prost(message, optional, tag="4")]
     pub options: ::std::option::Option<Options>,
-    #[prost(enumeration="job::Status", tag="5")]
-    pub status: i32,
+    #[prost(message, optional, tag="5")]
+    pub status: ::std::option::Option<job::Status>,
 }
 pub mod job {
+    #[derive(Clone, PartialEq, ::prost::Message)]
+    #[derive(Serialize, Deserialize)]
+    pub struct Status {
+        #[prost(oneof="status::Status", tags="1, 2, 3, 4")]
+        pub status: ::std::option::Option<status::Status>,
+    }
+    pub mod status {
+        #[derive(Clone, PartialEq, ::prost::Message)]
+        #[derive(Serialize, Deserialize)]
+        pub struct Waiting {
+        }
+        #[derive(Clone, PartialEq, ::prost::Message)]
+        #[derive(Serialize, Deserialize)]
+        pub struct Active {
+            #[prost(string, tag="1")]
+            pub started_at: std::string::String,
+        }
+        #[derive(Clone, PartialEq, ::prost::Message)]
+        #[derive(Serialize, Deserialize)]
+        pub struct Completed {
+            #[prost(string, tag="1")]
+            pub started_at: std::string::String,
+            #[prost(string, tag="2")]
+            pub completed_at: std::string::String,
+        }
+        #[derive(Clone, PartialEq, ::prost::Message)]
+        #[derive(Serialize, Deserialize)]
+        pub struct Failed {
+            #[prost(string, tag="1")]
+            pub started_at: std::string::String,
+            #[prost(string, tag="2")]
+            pub failed_at: std::string::String,
+        }
+        #[derive(Clone, PartialEq, ::prost::Oneof)]
+        #[derive(Serialize, Deserialize)]
+        pub enum Status {
+            #[prost(message, tag="1")]
+            Waiting(Waiting),
+            #[prost(message, tag="2")]
+            Active(Active),
+            #[prost(message, tag="3")]
+            Completed(Completed),
+            #[prost(message, tag="4")]
+            Failed(Failed),
+        }
+    }
     /// perform()
     #[derive(Clone, PartialEq, ::prost::Message)]
     #[derive(Serialize, Deserialize)]
@@ -174,8 +220,8 @@ pub mod job {
     #[derive(Clone, PartialEq, ::prost::Message)]
     #[derive(Serialize, Deserialize)]
     pub struct GetStatusResponse {
-        #[prost(enumeration="Status", tag="1")]
-        pub status: i32,
+        #[prost(message, optional, tag="1")]
+        pub status: ::std::option::Option<Status>,
     }
     /// get_list()
     #[derive(Clone, PartialEq, ::prost::Message)]
@@ -189,14 +235,5 @@ pub mod job {
     pub struct GetListResponse {
         #[prost(message, repeated, tag="1")]
         pub jobs: ::std::vec::Vec<super::Job>,
-    }
-    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
-    #[repr(i32)]
-    #[derive(Serialize, Deserialize)]
-    pub enum Status {
-        Waiting = 0,
-        Processing = 1,
-        Complete = 2,
-        Error = 3,
     }
 }

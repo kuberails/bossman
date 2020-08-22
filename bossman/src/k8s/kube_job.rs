@@ -1,5 +1,6 @@
 use crate::bossman::options::{env, env_from, Env, EnvFrom};
 use crate::bossman::Job;
+use crate::consts::{BOSSMAN_JOB_ID, BOSSMAN_JOB_NAME};
 use k8s_openapi::api::batch::v1::{Job as KubeJob, JobSpec};
 use k8s_openapi::apimachinery::pkg::apis::meta::v1::ObjectMeta;
 use std::collections::BTreeMap;
@@ -22,10 +23,11 @@ impl From<&Job> for KubeJob {
             None => None,
         };
 
-        let labels: BTreeMap<String, String> = vec![("id", &job.id), ("name", &job.name)]
-            .into_iter()
-            .map(|(key, value)| (key.to_string(), value.to_string()))
-            .collect();
+        let labels: BTreeMap<String, String> =
+            vec![(BOSSMAN_JOB_ID, &job.id), (BOSSMAN_JOB_NAME, &job.name)]
+                .into_iter()
+                .map(|(key, value)| (key.to_string(), value.to_string()))
+                .collect();
 
         let job_spec = JobSpec {
             backoff_limit: job_options.retries,

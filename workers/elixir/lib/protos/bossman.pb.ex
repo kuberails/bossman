@@ -1,13 +1,65 @@
+defmodule Bossman.Protobuf.V1alpha1.Job.Status.Waiting do
+  @moduledoc false
+  use Protobuf, syntax: :proto3
+
+  @type t :: %__MODULE__{}
+  defstruct []
+end
+
+defmodule Bossman.Protobuf.V1alpha1.Job.Status.Active do
+  @moduledoc false
+  use Protobuf, syntax: :proto3
+
+  @type t :: %__MODULE__{
+          started_at: String.t()
+        }
+  defstruct [:started_at]
+
+  field :started_at, 1, type: :string
+end
+
+defmodule Bossman.Protobuf.V1alpha1.Job.Status.Completed do
+  @moduledoc false
+  use Protobuf, syntax: :proto3
+
+  @type t :: %__MODULE__{
+          started_at: String.t(),
+          completed_at: String.t()
+        }
+  defstruct [:started_at, :completed_at]
+
+  field :started_at, 1, type: :string
+  field :completed_at, 2, type: :string
+end
+
+defmodule Bossman.Protobuf.V1alpha1.Job.Status.Failed do
+  @moduledoc false
+  use Protobuf, syntax: :proto3
+
+  @type t :: %__MODULE__{
+          started_at: String.t(),
+          failed_at: String.t()
+        }
+  defstruct [:started_at, :failed_at]
+
+  field :started_at, 1, type: :string
+  field :failed_at, 2, type: :string
+end
+
 defmodule Bossman.Protobuf.V1alpha1.Job.Status do
   @moduledoc false
-  use Protobuf, enum: true, syntax: :proto3
+  use Protobuf, syntax: :proto3
 
-  @type t :: integer | :WAITING | :PROCESSING | :COMPLETE | :ERROR
+  @type t :: %__MODULE__{
+          status: {atom, any}
+        }
+  defstruct [:status]
 
-  field :WAITING, 0
-  field :PROCESSING, 1
-  field :COMPLETE, 2
-  field :ERROR, 3
+  oneof :status, 0
+  field :waiting, 1, type: Bossman.Protobuf.V1alpha1.Job.Status.Waiting, oneof: 0
+  field :active, 2, type: Bossman.Protobuf.V1alpha1.Job.Status.Active, oneof: 0
+  field :completed, 3, type: Bossman.Protobuf.V1alpha1.Job.Status.Completed, oneof: 0
+  field :failed, 4, type: Bossman.Protobuf.V1alpha1.Job.Status.Failed, oneof: 0
 end
 
 defmodule Bossman.Protobuf.V1alpha1.Job.PerformRequest do
@@ -67,11 +119,11 @@ defmodule Bossman.Protobuf.V1alpha1.Job.GetStatusResponse do
   use Protobuf, syntax: :proto3
 
   @type t :: %__MODULE__{
-          status: Bossman.Protobuf.V1alpha1.Job.Status.t()
+          status: Bossman.Protobuf.V1alpha1.Job.Status.t() | nil
         }
   defstruct [:status]
 
-  field :status, 1, type: Bossman.Protobuf.V1alpha1.Job.Status, enum: true
+  field :status, 1, type: Bossman.Protobuf.V1alpha1.Job.Status
 end
 
 defmodule Bossman.Protobuf.V1alpha1.Job.GetListRequest do
@@ -107,7 +159,7 @@ defmodule Bossman.Protobuf.V1alpha1.Job do
           name: String.t(),
           docker_image_name: String.t(),
           options: Bossman.Protobuf.V1alpha1.Options.t() | nil,
-          status: Bossman.Protobuf.V1alpha1.Job.Status.t()
+          status: Bossman.Protobuf.V1alpha1.Job.Status.t() | nil
         }
   defstruct [:id, :name, :docker_image_name, :options, :status]
 
@@ -115,7 +167,7 @@ defmodule Bossman.Protobuf.V1alpha1.Job do
   field :name, 2, type: :string
   field :docker_image_name, 3, type: :string
   field :options, 4, type: Bossman.Protobuf.V1alpha1.Options
-  field :status, 5, type: Bossman.Protobuf.V1alpha1.Job.Status, enum: true
+  field :status, 5, type: Bossman.Protobuf.V1alpha1.Job.Status
 end
 
 defmodule Bossman.Protobuf.V1alpha1.JobService.Service do
