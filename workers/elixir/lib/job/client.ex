@@ -30,6 +30,13 @@ defmodule Bossman.Job.Client do
     end)
   end
 
+  def get_all() do
+    connect_and_do(fn channel ->
+      request = Bossman.Protobuf.V1alpha1.Job.GetAllRequest.new()
+      Bossman.Protobuf.V1alpha1.JobService.Stub.get_all(channel, request)
+    end)
+  end
+
   def get_list(name) do
     connect_and_do(fn channel ->
       request = Bossman.Protobuf.V1alpha1.Job.GetListRequest.new(name: name)

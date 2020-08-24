@@ -236,4 +236,9 @@ pub mod job {
         #[prost(message, repeated, tag="1")]
         pub jobs: ::std::vec::Vec<super::Job>,
     }
+    /// get_all()
+    #[derive(Clone, PartialEq, ::prost::Message)]
+    #[derive(Serialize, Deserialize)]
+    pub struct GetAllRequest {
+    }
 }

@@ -1,7 +1,7 @@
 mod kube_job;
 
 use crate::bossman::Job as BossmanJob;
-use crate::consts::{BOSSMAN_JOB_ID, BOSSMAN_JOB_NAME};
+use crate::consts::labels::{BOSSMAN_JOB_ID, BOSSMAN_JOB_NAME, MANAGED_BY_KEY, MANAGED_BY_VALUE};
 use k8s_openapi::api::batch::v1::Job as KubeJob;
 use kube::{
     api::{Api, ListParams, PostParams},
@@ -37,11 +37,24 @@ impl From<Error> for tonic::Status {
     }
 }
 
+pub async fn get_all() -> Result<Vec<KubeJob>, Error> {
+    let client = Client::try_default().await?;
+    let jobs: Api<KubeJob> = Api::all(client);
+
+    let list_params =
+        ListParams::default().labels(&format!("{}={}", MANAGED_BY_KEY, MANAGED_BY_VALUE));
+
+    Ok(jobs.list(&list_params).await?.items)
+}
+
 pub async fn get_job(id: &str) -> Result<KubeJob, Error> {
     let client = Client::try_default().await?;
     let jobs: Api<KubeJob> = Api::all(client);
 
-    let list_params = ListParams::default().labels(&format!("{}={}", BOSSMAN_JOB_ID, id));
+    let list_params = ListParams::default().labels(&format!(
+        "{}={},{}={}",
+        BOSSMAN_JOB_ID, id, MANAGED_BY_KEY, MANAGED_BY_VALUE
+    ));
 
     jobs.list(&list_params)
         .await?
@@ -55,7 +68,10 @@ pub async fn get_jobs_by_name(name: &str) -> Result<Vec<KubeJob>, Error> {
     let client = Client::try_default().await?;
     let jobs: Api<KubeJob> = Api::all(client);
 
-    let list_params = ListParams::default().labels(&format!("{}={}", BOSSMAN_JOB_NAME, name));
+    let list_params = ListParams::default().labels(&format!(
+        "{}={},{}={}",
+        BOSSMAN_JOB_NAME, name, MANAGED_BY_KEY, MANAGED_BY_VALUE
+    ));
 
     let job_list = jobs.list(&list_params).await?.items;
 

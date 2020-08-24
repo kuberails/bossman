@@ -4,8 +4,8 @@ mod error;
 mod k8s;
 
 use bossman::job::{
-    self, status, GetListRequest, GetListResponse, GetRequest, GetResponse, GetStatusResponse,
-    PerformRequest, PerformResponse,
+    self, status, GetAllRequest, GetListRequest, GetListResponse, GetRequest, GetResponse,
+    GetStatusResponse, PerformRequest, PerformResponse,
 };
 use bossman::job_service_server::{JobService, JobServiceServer};
 use bossman::Job;
@@ -76,6 +76,20 @@ impl JobService for JobServer {
 
         let job = bossman::Job::try_from(&kube_job).map_err(Error::KubeJobConversionError)?;
         let reply = GetResponse { job: Some(job) };
+
+        Ok(Response::new(reply))
+    }
+
+    async fn get_all(&self, _request: Request<GetAllRequest>) -> TonicResponse<GetListResponse> {
+        let kube_jobs = k8s::get_all().await?;
+
+        let jobs = kube_jobs
+            .iter()
+            .map(bossman::Job::try_from)
+            .filter_map(Result::ok)
+            .collect();
+
+        let reply = GetListResponse { jobs };
 
         Ok(Response::new(reply))
     }

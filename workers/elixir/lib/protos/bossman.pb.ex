@@ -150,6 +150,14 @@ defmodule Bossman.Protobuf.V1alpha1.Job.GetListResponse do
   field :jobs, 1, repeated: true, type: Bossman.Protobuf.V1alpha1.Job
 end
 
+defmodule Bossman.Protobuf.V1alpha1.Job.GetAllRequest do
+  @moduledoc false
+  use Protobuf, syntax: :proto3
+
+  @type t :: %__MODULE__{}
+  defstruct []
+end
+
 defmodule Bossman.Protobuf.V1alpha1.Job do
   @moduledoc false
   use Protobuf, syntax: :proto3
@@ -183,6 +191,10 @@ defmodule Bossman.Protobuf.V1alpha1.JobService.Service do
   rpc :GetStatus,
       Bossman.Protobuf.V1alpha1.Job.GetRequest,
       Bossman.Protobuf.V1alpha1.Job.GetStatusResponse
+
+  rpc :GetAll,
+      Bossman.Protobuf.V1alpha1.Job.GetAllRequest,
+      Bossman.Protobuf.V1alpha1.Job.GetListResponse
 
   rpc :GetList,
       Bossman.Protobuf.V1alpha1.Job.GetListRequest,

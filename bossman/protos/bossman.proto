@@ -57,6 +57,10 @@ message Job {
   message GetListRequest { string name = 1; }
   message GetListResponse { repeated Job jobs = 1; }
   // get_list()
+
+  // get_all()
+  message GetAllRequest {}
+  // get_all()
 }
 
 service JobService {
@@ -64,5 +68,7 @@ service JobService {
   rpc Get(Job.GetRequest) returns (Job.GetResponse) {}
 
   rpc GetStatus(Job.GetRequest) returns (Job.GetStatusResponse) {}
+
+  rpc GetAll(Job.GetAllRequest) returns (Job.GetListResponse) {}
   rpc GetList(Job.GetListRequest) returns (Job.GetListResponse) {}
 }

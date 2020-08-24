@@ -34,6 +34,17 @@ defmodule Bossman.Job do
     end
   end
 
+  @spec get_all() :: {:ok, [Job.t()]} | {:error, any}
+  def get_all() do
+    with {:ok, reply} <- Client.get_all(),
+         jobs <- Enum.map(reply.jobs, &Decode.decode/1),
+         {:ok, jobs} <- Result.filter_map(jobs) do
+      {:ok, jobs}
+    else
+      error -> error
+    end
+  end
+
   @spec get_list(String.t()) :: {:ok, [Job.t()]} | {:error, any}
   def get_list(job_name) do
     with {:ok, reply} <- Client.get_list(job_name),
