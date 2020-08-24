@@ -9,6 +9,7 @@ use bossman::job::{
 };
 use bossman::job_service_server::{JobService, JobServiceServer};
 use bossman::Job;
+use k8s::K8s;
 use k8s_openapi::api::batch::v1::Job as KubeJob;
 use std::convert::TryFrom;
 use thiserror::Error;
@@ -18,8 +19,17 @@ use tonic::{transport::Server, Request, Response, Status};
 
 type TonicResponse<T> = Result<Response<T>, Status>;
 
-#[derive(Debug, Default)]
-pub struct JobServer {}
+pub struct JobServer {
+    k8s: k8s::K8s,
+}
+
+impl JobServer {
+    async fn new() -> JobServer {
+        JobServer {
+            k8s: K8s::new().await,
+        }
+    }
+}
 
 #[derive(Debug, Error)]
 pub enum Error {
@@ -62,7 +72,8 @@ impl JobService for JobServer {
             options: request.options,
         };
 
-        k8s::create_job(&job)
+        self.k8s
+            .create_job(&job)
             .await
             .map_err(Error::KubeCreateError)?;
 
@@ -72,7 +83,7 @@ impl JobService for JobServer {
     }
 
     async fn get(&self, request: Request<GetRequest>) -> TonicResponse<GetResponse> {
-        let kube_job: KubeJob = k8s::get_job(&request.into_inner().id).await?;
+        let kube_job: KubeJob = self.k8s.get_job(&request.into_inner().id).await?;
 
         let job = bossman::Job::try_from(&kube_job).map_err(Error::KubeJobConversionError)?;
         let reply = GetResponse { job: Some(job) };
@@ -81,7 +92,7 @@ impl JobService for JobServer {
     }
 
     async fn get_all(&self, _request: Request<GetAllRequest>) -> TonicResponse<GetListResponse> {
-        let kube_jobs = k8s::get_all().await?;
+        let kube_jobs = self.k8s.get_all().await?;
 
         let jobs = kube_jobs
             .iter()
@@ -95,7 +106,10 @@ impl JobService for JobServer {
     }
 
     async fn get_list(&self, request: Request<GetListRequest>) -> TonicResponse<GetListResponse> {
-        let kube_jobs = k8s::get_jobs_by_name(&request.into_inner().name).await?;
+        let kube_jobs = self
+            .k8s
+            .get_jobs_by_name(&request.into_inner().name)
+            .await?;
 
         let jobs = kube_jobs
             .iter()
@@ -109,7 +123,7 @@ impl JobService for JobServer {
     }
 
     async fn get_status(&self, request: Request<GetRequest>) -> TonicResponse<GetStatusResponse> {
-        let kube_job: KubeJob = k8s::get_job(&request.into_inner().id).await?;
+        let kube_job: KubeJob = self.k8s.get_job(&request.into_inner().id).await?;
 
         let job = bossman::Job::try_from(&kube_job).map_err(Error::KubeJobConversionError)?;
 
@@ -123,7 +137,7 @@ impl JobService for JobServer {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let socket = "127.0.0.1:50051".parse()?;
 
-    let job = JobServer::default();
+    let job = JobServer::new().await;
 
     println!("Running bossman job server on: {:?}", socket);
 
