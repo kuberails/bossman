@@ -1,6 +1,5 @@
 mod bossman;
 mod consts;
-mod db;
 mod error;
 mod k8s;
 
@@ -26,8 +25,6 @@ pub struct JobServer {}
 pub enum Error {
     #[error("missing the required field in your request: {0})")]
     RequiredRequestFieldMissing(&'static str),
-    #[error(transparent)]
-    DbError(#[from] db::Error),
     #[error("unable to create job in the kubernetes cluster: {0}")]
     KubeCreateError(kube::Error),
     #[error("unable to get job from the kubernetes cluster: {0}")]
@@ -40,14 +37,9 @@ impl From<Error> for Status {
     fn from(error: Error) -> Self {
         match error {
             e @ Error::RequiredRequestFieldMissing(_) => Status::invalid_argument(e.to_string()),
-            e @ Error::DbError(db::Error::UnableToFindJob(_)) => Status::not_found(e.to_string()),
-            e @ Error::DbError(db::Error::UnableToFindJobList(_)) => {
-                Status::not_found(e.to_string())
-            }
             e @ Error::KubeCreateError(_) => Status::unknown(e.to_string()),
             e @ Error::KubeGetError(_) => Status::unknown(e.to_string()),
             e @ Error::KubeJobConversionError(_) => Status::not_found(e.to_string()),
-            e => Status::unknown(e.to_string()),
         }
     }
 }
@@ -71,7 +63,6 @@ impl JobService for JobServer {
             options: request.options,
         };
 
-        db::save_job(&job).await.map_err(Error::DbError)?;
         k8s::create_job(&job)
             .await
             .map_err(Error::KubeCreateError)?;
@@ -82,11 +73,9 @@ impl JobService for JobServer {
     }
 
     async fn get(&self, request: Request<GetRequest>) -> TonicResponse<GetResponse> {
-        let job = db::get_job(&request.into_inner().id)
+        let kube_job: KubeJob = k8s::get_job(&request.into_inner().id)
             .await
-            .map_err(Error::DbError)?;
-
-        let kube_job: KubeJob = k8s::get_job(&job).await.map_err(Error::KubeGetError)?;
+            .map_err(Error::KubeGetError)?;
 
         let job = bossman::Job::try_from(&kube_job).map_err(Error::KubeJobConversionError)?;
         let reply = GetResponse { job: Some(job) };
@@ -95,9 +84,15 @@ impl JobService for JobServer {
     }
 
     async fn get_list(&self, request: Request<GetListRequest>) -> TonicResponse<GetListResponse> {
-        let jobs = db::get_jobs_by_name(&request.into_inner().name)
+        let kube_jobs = k8s::get_jobs_by_name(&request.into_inner().name)
             .await
-            .map_err(Error::DbError)?;
+            .map_err(Error::KubeGetError)?;
+
+        let jobs = kube_jobs
+            .iter()
+            .map(bossman::Job::try_from)
+            .filter_map(Result::ok)
+            .collect();
 
         let reply = GetListResponse { jobs };
 
@@ -105,12 +100,13 @@ impl JobService for JobServer {
     }
 
     async fn get_status(&self, request: Request<GetRequest>) -> TonicResponse<GetStatusResponse> {
-        let status = db::get_job(&request.into_inner().id)
+        let kube_job: KubeJob = k8s::get_job(&request.into_inner().id)
             .await
-            .map_err(Error::DbError)?
-            .status;
+            .map_err(Error::KubeGetError)?;
 
-        let reply = GetStatusResponse { status };
+        let job = bossman::Job::try_from(&kube_job).map_err(Error::KubeJobConversionError)?;
+
+        let reply = GetStatusResponse { status: job.status };
 
         Ok(Response::new(reply))
     }
