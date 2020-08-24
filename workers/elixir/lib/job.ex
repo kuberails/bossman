@@ -38,7 +38,7 @@ defmodule Bossman.Job do
   def get_all() do
     with {:ok, reply} <- Client.get_all(),
          jobs <- Enum.map(reply.jobs, &Decode.decode/1),
-         {:ok, jobs} <- Result.filter_map(jobs) do
+         jobs <- Result.filter_map(jobs) do
       {:ok, jobs}
     else
       error -> error
@@ -49,7 +49,7 @@ defmodule Bossman.Job do
   def get_list(job_name) do
     with {:ok, reply} <- Client.get_list(job_name),
          jobs <- Enum.map(reply.jobs, &Decode.decode/1),
-         {:ok, jobs} <- Result.filter_map(jobs) do
+         jobs <- Result.filter_map(jobs) do
       {:ok, jobs}
     else
       error -> error
