@@ -9,7 +9,7 @@ defmodule Bossman.Job.Options.Encode do
   def encode(options) do
     try do
       {:ok, encode!(options)}
-    catch
+    rescue
       error ->
         {:error, %Error{message: "Unable to encode options: #{inspect(error)}"}}
     end

@@ -10,7 +10,7 @@ defmodule Bossman.Job.Decode do
   def decode(job) do
     try do
       {:ok, decode!(job)}
-    catch
+    rescue
       error ->
         {:error, %Error{message: "Unable to decode job: #{inspect(error)}"}}
     end

@@ -9,7 +9,7 @@ defmodule Bossman.Job.Options.Decode do
   def decode(options) do
     try do
       {:ok, decode!(options)}
-    catch
+    rescue
       error ->
         {:error, %Error{message: "Unable to decode options: #{inspect(error)}"}}
     end

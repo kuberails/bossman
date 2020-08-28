@@ -32,7 +32,7 @@ defmodule Bossman.Job.Status do
   def decode(status) do
     try do
       {:ok, decode!(status)}
-    catch
+    rescue
       error ->
         {:error, %Error{message: "Unable to decode status: #{inspect(error)}"}}
     end
