@@ -14,6 +14,7 @@ As a result, you can easily generate most of the code needed to implement a work
 - php client [_(coming soon, contributions welcome ...)_](#20)
 - rust client [_(coming soon, contributions welcome ...)_](#21)
 - ruby client [_(coming soon, contributions welcome ...)_](#22)
+- javascript client [_(coming soon, contributions welcome ...)_](#25)
 
 ## What?
 
